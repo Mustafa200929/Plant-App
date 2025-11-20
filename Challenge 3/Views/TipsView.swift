@@ -7,7 +7,7 @@ struct TipsView: View {
     @State private var errorMessage: String? = nil
     func TipView(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
-            Image(systemName: "sun.max.fill")
+            Image(systemName: iconForTip(tip))
                 .padding()
                 .glassEffect(.regular)
             
@@ -50,6 +50,8 @@ struct TipsView: View {
 
                         if loading {
                             ProgressView("Generating AI tips…")
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .padding()
                         }
 
@@ -73,6 +75,10 @@ struct TipsView: View {
                                         TipView(i: i, info: info, tips: tips)
                                     }
                                 }
+                                .padding()
+                                .background(.black.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .padding(.horizontal)
                             }
                         }
                           
@@ -101,10 +107,32 @@ struct TipsView: View {
             loading = false
         }
     }
+
+    // MARK: 🔍 Icon Mapping Logic
+    private func iconForTip(_ tip: String) -> String {
+        let lower = tip.lowercased()
+
+        if lower.contains("water") || lower.contains("moist") || lower.contains("damp") {
+            return "drop.fill"
+        }
+        if lower.contains("sun") || lower.contains("light") || lower.contains("shade") {
+            return "sun.max.fill"
+        }
+        if lower.contains("soil") || lower.contains("fertile") || lower.contains("mix") {
+            return "leaf.fill"
+        }
+        if lower.contains("temperature") || lower.contains("warm") || lower.contains("cold") {
+            return "thermometer"
+        }
+        if lower.contains("dark") || lower.contains("cover") {
+            return "moon.fill"
+        }
+
+        return "sparkles"
+    }
 }
 
 #Preview {
     TipsView(index: .constant(0))
         .environmentObject(PlantViewModel())
 }
-
