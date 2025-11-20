@@ -2,9 +2,25 @@ import SwiftUI
 
 struct TipsView: View {
     @EnvironmentObject var plantVM: PlantViewModel
-
+    @Binding var index: Int
     @State private var loading = false
     @State private var errorMessage: String? = nil
+    func TipView(i: Int, info: PlantInfo, tips: [String]) -> some View {
+        HStack {
+            Image(systemName: "sun.max.fill")
+                .padding()
+                .glassEffect(.regular)
+            
+            Text(tips.indices.contains(i) ? tips[i] : "")
+                .font(.system(size: 16, weight: .regular))
+                .multilineTextAlignment(.leading)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.black.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .padding(.horizontal)
+    }
 
     var body: some View {
         ZStack {
@@ -21,7 +37,6 @@ struct TipsView: View {
 
             VStack(alignment: .leading, spacing: 0) {
 
-                // MARK: Header
                 Text("Tips")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .padding()
@@ -30,8 +45,6 @@ struct TipsView: View {
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .padding(.horizontal)
                     .padding(.bottom)
-
-                // MARK: Tips List
                 ScrollView {
                     VStack(spacing: 16) {
 
@@ -45,28 +58,24 @@ struct TipsView: View {
                                 .foregroundColor(.red)
                                 .padding()
                         }
-
-                        if let plant = plantVM.plants.first,
-                           let info = plantVM.findPlantData(plantType: plant.plantType) {
-
+                        if let info = plantVM.findPlantData(plantType: plantVM.plants[index].plantType) {
                             let tips = plantVM.tips(for: info)
-
-                            ForEach(tips, id: \.self) { tip in
-                                HStack {
-                                    Image(systemName: "sun.max")
-                                        .padding()
-                                        .glassEffect(.regular)
-
-                                    Text(tip)
-                                        .font(.system(size: 16, weight: .regular))
+                            
+                            if tips.isEmpty {
+                                Text("Generating tips…")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                            } else {
+                                VStack {
+                                    ForEach(0..<tips.count, id: \.self) { i in
+                                        TipView(i: i, info: info, tips: tips)
+                                    }
                                 }
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(.black.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: 24))
-                                .padding(.horizontal)
                             }
                         }
+                          
                     }
                 }
             }
@@ -95,7 +104,7 @@ struct TipsView: View {
 }
 
 #Preview {
-    TipsView()
+    TipsView(index: .constant(0))
         .environmentObject(PlantViewModel())
 }
 

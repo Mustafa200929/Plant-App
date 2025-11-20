@@ -181,7 +181,7 @@ struct PlantSheet: View {
                             
                             // Tips navigation
                             NavigationLink{
-                                TipsView()
+                                TipsView(index: $index)
                             }label:{
                                 HStack{
                                     Text("Tips")
