@@ -1,0 +1,136 @@
+import SwiftUI
+
+struct HomeView: View {
+    @State private var showSheet = false
+    @State private var index: Int = 0
+    @State private var selectedDetent: PresentationDetent = .fraction(0.1)
+    @EnvironmentObject var plantVM: PlantViewModel
+    
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(hex: "2F66E9"),
+                        Color(hex: "1C3A86"),
+                        Color(hex: "122E5F")
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                
+                // Add Plant Button
+                HStack {
+                    NavigationLink(destination: addingplantView()) {
+                        Image(systemName: "plus")
+                            .padding()
+                            .accessibilityLabel("Add Plant")
+                            .glassEffect(.clear)
+                            .padding()
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                
+                // Glow circle
+                VStack {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 350, height: 350)
+                        .blur(radius: 60)
+                        .opacity(0.22)
+                        .offset(y: -260)
+                    Spacer()
+                }
+                .allowsHitTesting(false)
+                
+                // Main Rounded Container
+                ZStack {
+                    RoundedRectangle(cornerRadius: 180)
+                        .fill(Color(hex: "F2E0C2"))
+                        .frame(width: 380, height: 440)
+                    
+                    RoundedRectangle(cornerRadius: 180)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(hex: "E8C58C"),
+                                    Color(hex: "D7B179")
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: 340, height: 400)
+                        .shadow(color: Color.black.opacity(0.2), radius: 10)
+                    
+                    // ------------ FIXED PLANT GRID ------------
+                    GeometryReader { geo in
+                        let width = geo.size.width
+                        
+                        // Auto-resize plants based on how many there are
+                        let itemSize = max(min(width / 3, 90), 50)
+                        
+                        // Number of columns based on size
+                        let columns = Array(
+                            repeating: GridItem(.flexible(), spacing: 12),
+                            count: max(Int(width / itemSize), 1)
+                        )
+                        
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(plantVM.plants.indices, id: \.self) { i in
+                                let plant = plantVM.plants[i]
+                                
+                                VStack(spacing: 6) {
+                                    Image(plant.plantIconName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: itemSize, height: itemSize)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 2))
+                                        .shadow(radius: 4)
+                                        .onTapGesture {
+                                            index = i
+                                            showSheet = true
+                                        }
+                                    
+                                    Text(plant.plantName)
+                                        .font(.caption)
+                                        .foregroundColor(.black.opacity(0.8))
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(width: 340, height: 400)
+                    // ------------------------------------------
+                }
+                
+                // Bottom label
+                VStack {
+                    Spacer()
+                    Text("Click on plant")
+                        .padding()
+                        .foregroundStyle(.white)
+                        .glassEffect(.clear)
+                        .padding(.bottom, 24)
+                }
+            }
+            .sheet(isPresented: $showSheet) {
+                NavigationStack {
+                    PlantSheet(selectedDetent: $selectedDetent, index: $index)
+                        .presentationDetents(
+                            [.fraction(0.1), .fraction(0.7), .large],
+                            selection: $selectedDetent
+                        )
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    HomeView()
+        .environmentObject(PlantViewModel())
+        .environmentObject(JournalViewModel())
+}
