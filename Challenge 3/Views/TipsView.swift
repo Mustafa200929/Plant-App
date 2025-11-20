@@ -37,6 +37,8 @@ struct TipsView: View {
 
                         if loading {
                             ProgressView("Generating AI tips…")
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .frame(maxWidth: .infinity, alignment: .center)
                                 .padding()
                         }
 
@@ -52,16 +54,21 @@ struct TipsView: View {
                             let tips = plantVM.tips(for: info)
 
                             ForEach(tips, id: \.self) { tip in
-                                HStack {
-                                    Image(systemName: "sun.max")
-                                        .padding()
-                                        .glassEffect(.regular)
+                                HStack(alignment: .center, spacing: 14) {
+
+                                    // 🔥 PICK ICON BASED ON CONTENT
+                                    Image(systemName: iconForTip(tip))
+                                        .font(.system(size: 22))
+                                        .foregroundColor(Color.blue)
+                                        .padding(14)
+                                        .background(.ultraThinMaterial)
+                                        .clipShape(Circle())
 
                                     Text(tip)
                                         .font(.system(size: 16, weight: .regular))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                 }
                                 .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(.black.opacity(0.12))
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .padding(.horizontal)
@@ -92,10 +99,32 @@ struct TipsView: View {
             loading = false
         }
     }
+
+    // MARK: 🔍 Icon Mapping Logic
+    private func iconForTip(_ tip: String) -> String {
+        let lower = tip.lowercased()
+
+        if lower.contains("water") || lower.contains("moist") || lower.contains("damp") {
+            return "drop.fill"
+        }
+        if lower.contains("sun") || lower.contains("light") || lower.contains("shade") {
+            return "sun.max.fill"
+        }
+        if lower.contains("soil") || lower.contains("fertile") || lower.contains("mix") {
+            return "leaf.fill"
+        }
+        if lower.contains("temperature") || lower.contains("warm") || lower.contains("cold") {
+            return "thermometer"
+        }
+        if lower.contains("dark") || lower.contains("cover") {
+            return "moon.fill"
+        }
+
+        return "sparkles"
+    }
 }
 
 #Preview {
     TipsView()
         .environmentObject(PlantViewModel())
 }
-
