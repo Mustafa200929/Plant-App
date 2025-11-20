@@ -89,10 +89,13 @@ struct HomeView: View {
                                         .clipShape(Circle())
                                         .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 2))
                                         .shadow(radius: 4)
+                                        
                                         .onTapGesture {
+                                            guard plantVM.plants.indices.contains(i) else { return }
                                             index = i
                                             showSheet = true
                                         }
+
                                     
                                     Text(plant.plantName)
                                         .font(.caption)
@@ -117,12 +120,29 @@ struct HomeView: View {
                 }
             }
             .sheet(isPresented: $showSheet) {
-                NavigationStack {
-                    PlantSheet(selectedDetent: $selectedDetent, index: $index)
-                        .presentationDetents(
-                            [.fraction(0.1), .fraction(0.7), .large],
-                            selection: $selectedDetent
-                        )
+                if plantVM.plants.indices.contains(index) {
+                    NavigationStack {
+                        PlantSheet(selectedDetent: $selectedDetent, index: $index)
+                            .presentationDetents(
+                                [.fraction(0.1), .fraction(0.7), .large],
+                                selection: $selectedDetent
+                            )
+                    }
+                }
+            }
+            .onChange(of: showSheet) { isShowing in
+                if isShowing {
+                    // If the selected index is no longer valid or there are no plants, dismiss immediately
+                    if !plantVM.plants.indices.contains(index) || plantVM.plants.isEmpty {
+                        showSheet = false
+                    }
+                }
+            }
+            .onChange(of: plantVM.plants.count) { _ in
+                if showSheet {
+                    if !plantVM.plants.indices.contains(index) || plantVM.plants.isEmpty {
+                        showSheet = false
+                    }
                 }
             }
         }

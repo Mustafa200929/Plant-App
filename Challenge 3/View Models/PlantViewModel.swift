@@ -30,6 +30,10 @@ class PlantViewModel: ObservableObject {
         )
         plants.append(newPlant)
     }
+    func removePlant(at index: Int) {
+        guard plants.indices.contains(index) else { return }
+        plants.remove(at: index)
+    }
 
     func plantAge(index: Int) -> Int {
         let today = Date()

@@ -2,8 +2,7 @@
 //  PlantSheet.swift
 //  Challenge 3
 //
-//  Created by Mustafa Topiwala on 17/11/25.
-//
+
 import SwiftUI
 import PhotosUI
 
@@ -20,13 +19,13 @@ struct PlantSheet: View {
     @State private var cameraViewShown: Bool = false
     @State private var showPhotoPicker = false
     @State private var refreshID = UUID()
-    
-    // removed unused TipGenerator + state, since tips now come from PlantViewModel
+    @State private var showDeleteDialog = false
     
     var canSave: Bool {
         !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
     }
     
+    // MARK: - Tip Preview (unchanged signature)
     func TipPreview(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
             Image(systemName: "sun.max.fill")
@@ -43,8 +42,9 @@ struct PlantSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.horizontal)
     }
-
-    func JournalPreview(i: Int) -> some View {
+    
+    // MARK: - Journal Preview (uses plant.id)
+    func JournalPreview(i: Int, plant: Plant) -> some View {
         HStack{
             VStack(spacing: 4){
                 Circle()
@@ -81,7 +81,17 @@ struct PlantSheet: View {
                     Text(note)
                         .font(.system(size: 16, weight: .regular))
                 }
-                if let photo = entry.photo{
+                
+                
+                Text(entry.date, style: .date)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                
+                if let note = entry.notes {
+                    Text(note)
+                        .font(.system(size: 16, weight: .regular))
+                }
+                if let photo = entry.photo {
                     photo
                         .resizable()
                         .scaledToFit()
@@ -97,91 +107,103 @@ struct PlantSheet: View {
     
     // MARK: - Body
     var body: some View {
-        ZStack{
-            LinearGradient(
-                colors: [
-                    Color(hex: "D7EEFF"),
-                    Color(hex: "B7D8FF"),
-                    Color(hex: "97C1FF")
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .opacity(selectedDetent == .large ? 1 : 0)
-            .animation(.easeInOut(duration: 0.25), value: selectedDetent)
-            .ignoresSafeArea()
+        // Guard: if index is not valid, show a safe placeholder to avoid crash
+        if !plantVM.plants.indices.contains(index) {
+            VStack(spacing: 12) {
+                Text("No plant selected")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+                Text("This sheet was opened with an invalid plant index.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("Close") {
+                    // Try to reduce sheet size to dismissed state — host should dismiss the sheet
+                    selectedDetent = .fraction(0.1)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+        } else {
+            // Safe: bind plant once and use it throughout
+            let plant = plantVM.plants[index]
             
-            ScrollView{
-                VStack{
-                    // Header
-                    HStack{
-                        Image(systemName: plantVM.plants[index].plantIconName)
+            ZStack{
+                LinearGradient(
+                    colors: [
+                        Color(hex: "D7EEFF"),
+                        Color(hex: "B7D8FF"),
+                        Color(hex: "97C1FF")
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .opacity(selectedDetent == .large ? 1 : 0)
+                .animation(.easeInOut(duration: 0.25), value: selectedDetent)
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack {
+                        // HEADER
+                        HStack {
+                            Image(plant.plantIconName)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 44, height: 44)
+                                .padding()
+                                .glassEffect(.regular.tint(.teal.opacity(0.3)))
+                            
+                            VStack(alignment: .leading) {
+                                Text(plant.plantName)
+                                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                                Text(plant.plantType)
+                            }
                             .padding()
-                            .glassEffect(.regular.tint(.teal.opacity(0.3)))
-                        
-                        VStack(alignment: .leading){
-                            Text(plantVM.plants[index].plantName)
-                                .font(.system(size: 24, weight: .bold, design: .rounded))
-                            Text(plantVM.plants[index].plantType)
+                            
+                            Spacer()
+                            
+                            let age = plantVM.plantAge(index: index)
+                            Text(age == 0 ? "Just born!" :
+                                    age == 1 ? "1 day old" :
+                                    "\(age) days old")
+                            .fontWeight(.semibold)
                         }
-                        .frame(alignment: .topLeading)
                         .padding()
                         
-                        Spacer()
-                        
-                        let age = plantVM.plantAge(index: index)
-                        if age == 0 {
-                            Text("Just born!")
-                                .fontWeight(.semibold)
-                        } else if age == 1 {
-                            Text("\(age) day old")
-                                .fontWeight(.semibold)
-                        } else {
-                            Text("\(age) days old")
-                                .fontWeight(.semibold)
-                        }
-                    }
-                    .padding()
-                    
-                    // Medium / Large detent content
-                    if selectedDetent == .fraction(0.7) || selectedDetent == .large {
-                        VStack{
-                            // Germination summary card
-                            VStack(){
-                                if let info = plantVM.findPlantData(plantType: plantVM.plants[index].plantType) {
+                        // MEDIUM + LARGE CONTENT
+                        if selectedDetent == .fraction(0.7) || selectedDetent == .large {
+                            
+                            // GERMINATION CARD
+                            VStack{
+                                if let info = plantVM.findPlantData(plantType: plant.plantType) {
                                     let remaining = info.germinationMaxDays - plantVM.plantAge(index: index)
                                     Text("Should germinate in \(max(remaining, 0)) days")
                                         .padding(.horizontal)
                                         .padding(.top)
                                         .fontWeight(.medium)
+                                    
+                                    Text("Look out for sprouts")
+                                        .padding(.bottom)
                                 } else {
                                     Text("Germination info unavailable")
-                                        .padding(.horizontal)
-                                        .padding(.top)
-                                        .fontWeight(.medium)
+                                        .padding()
                                 }
-                                Text("Look out for sprouts")
-                                    .padding(.bottom)
                             }
                             .frame(maxWidth:.infinity)
                             .background(.black.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 24))
                             .padding(.horizontal)
                             
-                            // Germinated button
+                            // GERMINATED BUTTON
                             Text("Germinated")
                                 .padding()
-                                .glassEffect(.regular.tint(Color(hex:"DFFFE9")).interactive(),in: Capsule())
+                                .glassEffect(.regular.tint(Color(hex:"DFFFE9")).interactive(), in: Capsule())
                                 .frame(maxWidth: .infinity, alignment: .topLeading)
                                 .padding()
-                                .onTapGesture {
-                                    // Next page / state change here
-                                }
                             
-                            // Tips navigation
-                            NavigationLink{
-                                TipsView(index: $index)
-                            }label:{
-                                HStack{
+                            // TIPS NAV
+                            NavigationLink {
+                                TipsView( index: $index)
+                            } label: {
+                                HStack {
                                     Text("Tips")
                                         .font(.system(size: 24, weight: .bold, design: .rounded))
                                         .padding(.bottom)
@@ -193,15 +215,13 @@ struct PlantSheet: View {
                                 .frame(maxWidth:.infinity, alignment: .leading)
                             }
                             
-                            // Tips preview (SAFE NOW)
-                            if let info = plantVM.findPlantData(plantType: plantVM.plants[index].plantType) {
+                            // TIPS PREVIEW
+                            if let info = plantVM.findPlantData(plantType: plant.plantType) {
                                 let tips = plantVM.tips(for: info)
-                                
                                 if tips.isEmpty {
                                     Text("Generating tips…")
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundStyle(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal)
                                 } else {
                                     VStack {
@@ -212,126 +232,169 @@ struct PlantSheet: View {
                                 }
                             }
                         }
-                    }
-                    
-                    // Large detent extra content
-                    if selectedDetent == .large {
-                        VStack{
-                            // Journal header
-                            HStack{
-                                NavigationLink{
-                                    JournalView(index:$index)
-                                }label:{
-                                    Text("Journal")
-                                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                                        .padding(.bottom)
-                                        .padding(.leading)
-                                    Image(systemName: "chevron.right")
-                                        .padding(.bottom)
+                        
+                        // LARGE CONTENT (JOURNAL)
+                        if selectedDetent == .large {
+                            VStack {
+                                HStack {
+                                    NavigationLink {
+                                        JournalView(index: $index)
+                                    } label: {
+                                        Text("Journal")
+                                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                                            .padding(.bottom)
+                                            .padding(.leading)
+                                        Image(systemName: "chevron.right")
+                                            .padding(.bottom)
+                                    }
+                                    .foregroundStyle(.black)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top)
                                 }
-                                .foregroundStyle(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top)
-                            }
-                            
-                            // Add journal entry row
-                            HStack(){
-                                Image(systemName: isExpanded ? "checkmark" : "plus")
-                                    .padding()
-                                    .foregroundStyle(canSave ? .green : .secondary)
-                                    .opacity(canSave ? 1 : 0.5)
-                                    .glassEffect(.regular.interactive())
-                                    .contentTransition(.symbolEffect(.replace))
-                                    .onTapGesture {
-                                        withAnimation{
-                                            if canSave{
-                                                journalVM.addJournalEntry(
-                                                    plantID: plantVM.plants[index].id,
-                                                    notes: note,
-                                                    photo: selectedImage
-                                                )
-                                                isExpanded.toggle()
-                                                selectedImage = nil
-                                                note = ""
-                                                refreshID = UUID()
-                                            } else {
-                                                isExpanded.toggle()
+                                
+                                // ADD JOURNAL ENTRY
+                                HStack {
+                                    Image(systemName: isExpanded ? "checkmark" : "plus")
+                                        .padding()
+                                        .foregroundStyle(canSave ? .green : .secondary)
+                                        .opacity(canSave ? 1 : 0.5)
+                                        .glassEffect(.regular.interactive())
+                                        .contentTransition(.symbolEffect(.replace))
+                                        .onTapGesture {
+                                            withAnimation {
+                                                if canSave {
+                                                    journalVM.addJournalEntry(
+                                                        plantID: plant.id,
+                                                        notes: note,
+                                                        photo: selectedImage
+                                                    )
+                                                    isExpanded.toggle()
+                                                    selectedImage = nil
+                                                    note = ""
+                                                    refreshID = UUID()
+                                                } else {
+                                                    isExpanded.toggle()
+                                                }
                                             }
                                         }
+                                    
+                                    if isExpanded {
+                                        Group {
+                                            Image(systemName: selectedImage == nil ? "photo.badge.plus" : "photo.badge.checkmark")
+                                                .foregroundStyle((selectedImage != nil) ? .green : .secondary)
+                                                .onTapGesture {
+                                                    showDialog.toggle()
+                                                }
+                                                .confirmationDialog("Add Photo", isPresented: $showDialog) {
+                                                    Button("Take Photo"){ cameraViewShown.toggle() }
+                                                    Button("Choose Photo"){ showPhotoPicker.toggle() }
+                                                    Button("Discard photo", role: .destructive){
+                                                        selectedImage = nil
+                                                    }
+                                                }
+                                            
+                                            TextField("Add a note...", text: $note)
+                                        }
+                                        .padding()
+                                        .glassEffect(.regular.interactive())
                                     }
+                                }
+                                .padding()
                                 
-                                if isExpanded{
-                                    Group{
-                                        Image(systemName: selectedImage == nil ? "photo.badge.plus" : "photo.badge.checkmark")
-                                            .foregroundStyle((selectedImage != nil) ? .green : .secondary)
-                                            .onTapGesture{
-                                                showDialog.toggle()
-                                            }
-                                            .confirmationDialog("Add Photo", isPresented: $showDialog, titleVisibility: .hidden){
-                                                Button{
-                                                    cameraViewShown.toggle()
-                                                }label:{
-                                                    Text("Take Photo")
-                                                }
-                                                Button{
-                                                    showPhotoPicker.toggle()
-                                                }label:{
-                                                    Text("Choose Photo")
-                                                }
-                                                Button(role: .destructive){
-                                                    selectedImage = nil
-                                                }label:{
-                                                    Text("Discard photo")
-                                                }
-                                            }
-                                        
-                                        TextField("Add a note...", text: $note)
+                                // JOURNAL PREVIEW
+                                let journal = journalVM.returnJournal(for: plant.id)
+                                if journal.entries.count > 0 {
+                                    let values = journal.entries.prefix(2)
+                                    ForEach(0..<values.count, id: \.self) { i in
+                                        JournalPreview(i: i, plant: plant)
                                     }
-                                    .padding()
-                                    .glassEffect(.regular.interactive())
+                                } else {
+                                    Text("No journal entries yet.")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .padding()
                                 }
                             }
+                        }
+                        
+                        // ---------------------------
+                        // DELETE PLANT BUTTON (NEW)
+                        // ---------------------------
+                        Button(role: .destructive) {
+                            showDeleteDialog = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "trash.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                
+                                Text("Delete Plant")
+                                    .font(.system(size: 20, weight: .semibold))
+                            }
+                            .foregroundStyle(.red)
                             .padding()
-                            
-                            // Journal preview
-                            let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
-                            if journal.entries.count > 0{
-                                let values = journal.entries.prefix(2)
-                                ForEach(0..<values.count, id: \.self){ i in
-                                    JournalPreview(i: i)
-                                }
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.red.opacity(0.15))
+                                    .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                            )
+                            .padding(.horizontal)
+                            .padding(.bottom, 30)
+                        }
+                        .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
+                            Button("Delete Plant", role: .destructive) {
+                                plantVM.removePlant(at: index)
+                                selectedDetent = .fraction(0.1)
                             }
-                            else{
-                                Text("No journal entries yet.")
-                                    .font(.system(size: 18, weight: .semibold))
-                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text("Are you sure?")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .bottom)
+                }
+                .padding(.top, -20)
+            }
+            .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
+            .onChange(of: selectedItem) { item in
+                if let item = item {
+                    Task {
+                        if let data = try? await item.loadTransferable(type: Data.self) {
+                            selectedImage = UIImage(data: data)
                         }
                     }
                 }
             }
-            .padding(.top, -20)
-        }
-        .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
-        .onChange(of: selectedItem) { item in
-            if let item = item {
-                Task {
-                    if let data = try? await item.loadTransferable(type: Data.self) {
-                        selectedImage = UIImage(data: data)
-                    }
+            .sheet(isPresented: $cameraViewShown) {
+                CameraView(image: $selectedImage)
+                    .presentationDetents([.large])
+            }
+            .id(refreshID)
+            .task {
+                if let info = plantVM.findPlantData(plantType: plant.plantType) {
+                    await plantVM.loadTips(for: info)
                 }
             }
         }
-        .sheet(isPresented: $cameraViewShown) {
-            CameraView(image: $selectedImage)
-                .presentationDetents([.large])
-        }
-        .id(refreshID)
-        // load FM tips when sheet appears (uses caching in PlantViewModel)
-        .task {
-            if let info = plantVM.findPlantData(plantType: plantVM.plants[index].plantType) {
-                await plantVM.loadTips(for: info)
-            }
-        }
+    }
+}
+
+// MARK: - Preview with sample plant to prevent crashes
+struct PlantSheet_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a PlantViewModel and inject a sample plant
+        let pv = PlantViewModel()
+        let samplePlant = Plant(
+            plantName: "Bob",
+            plantType: "basil",
+            plantIconName: "plant1",
+            plantDateCreated: Date()
+        )
+        pv.plants = [samplePlant]
+        
+        let jv = JournalViewModel()
+        return PlantSheet(selectedDetent: .constant(.large), index: .constant(0))
+            .environmentObject(pv)
+            .environmentObject(jv)
     }
 }
 
@@ -340,4 +403,3 @@ struct PlantSheet: View {
         .environmentObject(PlantViewModel())
         .environmentObject(JournalViewModel())
 }
-
