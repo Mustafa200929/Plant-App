@@ -7,7 +7,7 @@ struct TipsView: View {
     @State private var errorMessage: String? = nil
     func TipView(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
-            Image(systemName: iconForTip(tip))
+            Image(systemName: "sun.max.fill")
                 .padding()
                 .glassEffect(.regular)
             
@@ -75,10 +75,6 @@ struct TipsView: View {
                                         TipView(i: i, info: info, tips: tips)
                                     }
                                 }
-                                .padding()
-                                .background(.black.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: 24))
-                                .padding(.horizontal)
                             }
                         }
                           
@@ -108,7 +104,7 @@ struct TipsView: View {
         }
     }
 
-    // MARK: 🔍 Icon Mapping Logic
+
     private func iconForTip(_ tip: String) -> String {
         let lower = tip.lowercased()
 

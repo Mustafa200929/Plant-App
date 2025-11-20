@@ -27,7 +27,6 @@ struct PlantSheet: View {
         !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
     }
     
-    // MARK: - Tip Preview (now safe)
     func TipPreview(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
             Image(systemName: "sun.max.fill")
@@ -45,7 +44,6 @@ struct PlantSheet: View {
         .padding(.horizontal)
     }
 
-    // MARK: - Journal Preview
     func JournalPreview(i: Int) -> some View {
         HStack{
             VStack(spacing: 4){
