@@ -6,7 +6,9 @@ struct HomeView: View {
     @State private var selectedDetent: PresentationDetent = .fraction(0.1)
     @EnvironmentObject var plantVM: PlantViewModel
     @State private var boxOpacity: Double = 1
+
     
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -20,8 +22,41 @@ struct HomeView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
+
                 .navigationBarBackButtonHidden(true)
                 
+
+                ZStack {
+                    Rectangle()
+                        .fill(Color.clear)
+                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20))
+                        .frame(width:300, height:130)
+                        .offset(x:-35, y:-310)
+                    
+                    Text("You check your supplies, you realise you only have one seed inside. To continue, please get a seed from your preferred plant vendor")
+                        .foregroundColor(.black)
+                        .frame(width:250, height:130)
+                        .offset(x:-50, y:-310)
+                }
+                .opacity(boxOpacity)
+                .animation(.easeOut(duration: 1), value: boxOpacity)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                        boxOpacity = 0
+                    }
+                }
+                // Add Plant Button
+                HStack {
+                    NavigationLink(destination: addingplantView()) {
+                        Image(systemName: "plus")
+                            .padding()
+                            .accessibilityLabel("Add Plant")
+                            .glassEffect(.clear)
+                            .padding()
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+
                 
                 ZStack {
                     Rectangle()
@@ -173,3 +208,4 @@ struct HomeView: View {
         .environmentObject(PlantViewModel())
         .environmentObject(JournalViewModel())
 }
+
