@@ -4,8 +4,8 @@
 //
 //  Created by Mustafa Topiwala on 17/11/25.
 //
-
 import Foundation
+import CoreGraphics
 
 struct Plant: Identifiable {
     var id = UUID()
@@ -15,6 +15,7 @@ struct Plant: Identifiable {
     var plantDateCreated: Date
     var plantDateGerminated: Date
     var plantIsGerminated: Bool
+    var position: CGPoint = .zero
 }
 
 struct PlantTip: Identifiable {
@@ -178,5 +179,4 @@ let PlantDatabase: [PlantInfo] = [
             toxicinfo: "Toxic to cats and dogs"
         )
 ]
-
 

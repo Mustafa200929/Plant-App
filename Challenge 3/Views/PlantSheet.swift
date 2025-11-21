@@ -119,7 +119,7 @@ struct PlantSheet: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 54, height: 54)
-                            .glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.gray.opacity(0.35)))
+                            .glassEffect(.clear.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.gray.opacity(0.35)))
                         
                         VStack(alignment: .leading) {
                             Text(plant.plantName)
@@ -210,34 +210,30 @@ struct PlantSheet: View {
                                         withAnimation(smooth) {
                                             plantVM.plantIsGerminated(plantID: plantVM.plants[index].id)
                                         }
-                                    )
-                                    .padding(.horizontal)
+                                    }
+                                )
+                                .padding(.horizontal)
                             }
-                            
-                            
-                            Text("Germinated")
-                                .padding()
-                                .glassEffect(.regular.tint(Color(hex:"DFFFE9")).interactive(), in: Capsule())
-                                .frame(maxWidth: .infinity, alignment: .topLeading)
-                                .padding()
-                            
-
+                            Text("Tips")
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .padding(.top)
+                                .padding(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             
                             NavigationLink {
-                                TipsView( index: $index)
+                                TipsView(index: $index)
                             } label: {
-                                HStack {
-                                    Text("Tips")
-                                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                                HStack(spacing:0){
+                                    Text("See more")
+                                        .font(.system(size: 16, weight: .regular, design: .rounded))
                                         .padding(.bottom)
                                         .padding(.leading)
                                     Image(systemName: "chevron.right")
                                         .padding(.bottom)
                                 }
-                                .foregroundStyle(.black)
-                                .frame(maxWidth:.infinity, alignment: .leading)
+                                .foregroundStyle(Color(.secondaryLabel))
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            
                             
                             if let info = plantVM.findPlantData(plantType: plant.plantType) {
                                 let tips = plantVM.tips(for: info)
@@ -246,71 +242,14 @@ struct PlantSheet: View {
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundStyle(.secondary)
                                         .padding(.horizontal)
+                                        .transition(.opacity)
                                 } else {
                                     VStack {
                                         ForEach(0..<min(tips.count, 2), id: \.self) { i in
                                             TipPreview(i: i, info: info, tips: tips)
                                         }
-                                        
-                                        
-                                            NavigationLink {
-                                                TipsView(index: $index)
-                                            } label: {
-                                                HStack {
-                                                    Text("See All Tips")
-                                                        .font(.system(size: 18, weight: .bold))
-                                                    Image(systemName: "chevron.right")
-                                                }
-                                                .padding()
-                                                .frame(maxWidth: .infinity)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 24)
-                                                        .fill(Color.black.opacity(0.12))
-                                                )
-                                                .padding(.horizontal)
-                                            }
-                                            .padding(.top, 4)
-                                        
                                     }
-                                )
-                                .padding(.horizontal)
-                                Text("Tips")
-                                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                                    .padding(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.top)
-                                HStack {
-                                    NavigationLink {
-                                        TipsView(index: $index)
-                                    } label: {
-                                        Text("Journal")
-                                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                                            .padding(.bottom)
-                                            .padding(.leading)
-                                        Image(systemName: "chevron.right")
-                                            .padding(.bottom)
-                                    }
-                                    .foregroundStyle(.black)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.top)
-                                }
-                                
-                                if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                                    let tips = plantVM.tips(for: info)
-                                    if tips.isEmpty {
-                                        Text("Generating tips…")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundStyle(.secondary)
-                                            .padding(.horizontal)
-                                            .transition(.opacity)
-                                    } else {
-                                        VStack {
-                                            ForEach(0..<min(tips.count, 2), id: \.self) { i in
-                                                TipPreview(i: i, info: info, tips: tips)
-                                            }
-                                        }
-                                        .transition(.opacity)
-                                    }
+                                    .transition(.opacity)
                                 }
                             }
                         }
@@ -326,18 +265,19 @@ struct PlantSheet: View {
                                 .padding(.top)
                             HStack {
                                 NavigationLink {
-                                    JournalView(index: $index)
+                                    TipsView(index: $index)
                                 } label: {
-                                    Text("See more")
-                                        .font(.system(size: 16, weight: .regular, design: .rounded))
-                                        .foregroundStyle(Color(.secondaryLabel))
-                                        .padding(.bottom)
-                                        .padding(.leading)
-                                    Image(systemName: "chevron.right")
-                                        .padding(.bottom)
+                                    HStack(spacing:0){
+                                        Text("See more")
+                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                            .padding(.bottom)
+                                            .padding(.leading)
+                                        Image(systemName: "chevron.right")
+                                            .padding(.bottom)
+                                    }
+                                    .foregroundStyle(Color(.secondaryLabel))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 }
-                                .foregroundStyle(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             
                             // ADD JOURNAL ENTRY
@@ -430,10 +370,6 @@ struct PlantSheet: View {
                                         plantVM.removePlant(at: index)
                                         selectedDetent = .fraction(0.1)
                                     }
-                                } else {
-                                    Text("No journal entries yet.")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .padding()
                                 }
                                 Button("Cancel", role: .cancel) {}
                             } message: {

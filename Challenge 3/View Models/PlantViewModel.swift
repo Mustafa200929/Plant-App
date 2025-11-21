@@ -14,7 +14,8 @@ class PlantViewModel: ObservableObject {
 
     @Published var plants: [Plant] = []
     @Published var tipsForSpecies: [String : [String]] = [:]
-
+    @Published var islandSize: CGSize = .zero
+    @Published var positions: [UUID : CGPoint] = [:]
     // FM service for generating germination tips
     private let tipGenerator = TipGenerator()
 
@@ -22,7 +23,7 @@ class PlantViewModel: ObservableObject {
                   plantType: String,
                   plantIconName: String)
     {
-        let newPlant = Plant(
+        var newPlant = Plant(
             plantName: plantName,
             plantType: plantType,
             plantIconName: plantIconName,
@@ -30,6 +31,10 @@ class PlantViewModel: ObservableObject {
             plantDateGerminated: Date(),
             plantIsGerminated: false
         )
+        if islandSize != .zero {
+                newPlant.position = assignRandomPosition(in: islandSize)
+            }
+
         plants.append(newPlant)
     }
     func removePlant(at index: Int) {
@@ -83,6 +88,74 @@ class PlantViewModel: ObservableObject {
         let key = plantInfo.name.lowercased()
         return tipsForSpecies[key] ?? []
     }
-    
-}
+    func assignRandomPosition(in size: CGSize) -> CGPoint {
+        let radius: CGFloat = 50 // temp radius, real size is scaled later
+        
+        var newPoint: CGPoint
+        var attempts = 0
+        
+        repeat {
+            attempts += 1
+            
+            newPoint = CGPoint(
+                x: CGFloat.random(in: 60...(size.width - 60)),
+                y: CGFloat.random(in: 60...(size.height - 60))
+            )
+            
+            // prevent overlap
+            let overlap = plants.contains { existing in
+                let dx = existing.position.x - newPoint.x
+                let dy = existing.position.y - newPoint.y
+                return sqrt(dx*dx + dy*dy) < (radius * 2)
+            }
+            
+            if !overlap {
+                return newPoint
+            }
+            
+        } while attempts < 50
+        
+        return newPoint
+    }
+    func randomPositionAvoidingOverlap(
+        islandSize: CGSize,
+        itemSize: CGFloat,
+        plantID: UUID
+    ) -> CGPoint {
 
+        let radius = islandSize.width / 2
+        let innerRadius = radius - itemSize/2
+        let center = CGPoint(x: radius, y: radius)
+
+        let minimumGap: CGFloat = itemSize * 0.35  // << add this for spacing
+
+        let maxAttempts = 200
+
+        for _ in 0..<maxAttempts {
+            let angle = CGFloat.random(in: 0...(2 * .pi))
+            let dist = CGFloat.random(in: 0...innerRadius)
+
+            let candidate = CGPoint(
+                x: center.x + cos(angle) * dist,
+                y: center.y + sin(angle) * dist
+            )
+
+            // Check for collisions WITH GAP
+            let collision = positions.values.contains { existing in
+                hypot(existing.x - candidate.x, existing.y - candidate.y)
+                < (itemSize + minimumGap)
+            }
+
+            if !collision {
+                positions[plantID] = candidate
+                return candidate
+            }
+        }
+
+        // fallback if no space found
+        let fallback = center
+        positions[plantID] = fallback
+        return fallback
+    }
+
+}
