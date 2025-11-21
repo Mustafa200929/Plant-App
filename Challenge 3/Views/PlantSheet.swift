@@ -43,8 +43,7 @@ struct PlantSheet: View {
         .padding(.horizontal)
     }
     
-    // MARK: - Journal Preview (uses plant.id)
-    func JournalPreview(i: Int, plant: Plant) -> some View {
+    func JournalPreview(i: Int) -> some View {
         HStack{
             VStack(spacing: 4){
                 Circle()
@@ -81,17 +80,7 @@ struct PlantSheet: View {
                     Text(note)
                         .font(.system(size: 16, weight: .regular))
                 }
-                
-                
-                Text(entry.date, style: .date)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                
-                if let note = entry.notes {
-                    Text(note)
-                        .font(.system(size: 16, weight: .regular))
-                }
-                if let photo = entry.photo {
+                if let photo = entry.photo{
                     photo
                         .resizable()
                         .scaledToFit()
@@ -302,16 +291,16 @@ struct PlantSheet: View {
                                 .padding()
                                 
                                 // JOURNAL PREVIEW
-                                let journal = journalVM.returnJournal(for: plant.id)
-                                if journal.entries.count > 0 {
+                                let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
+                                if journal.entries.count > 0{
                                     let values = journal.entries.prefix(2)
-                                    ForEach(0..<values.count, id: \.self) { i in
-                                        JournalPreview(i: i, plant: plant)
+                                    ForEach(0..<values.count, id: \.self){ i in
+                                        JournalPreview(i: i)
                                     }
-                                } else {
+                                }
+                                else{
                                     Text("No journal entries yet.")
                                         .font(.system(size: 18, weight: .semibold))
-                                        .padding()
                                 }
                             }
                         }
