@@ -130,6 +130,7 @@ struct addingplantView: View {
                             TextField("Enter a nickname for your plant", text: $nickname)
                                 .padding()
                                 .glassEffect(.clear, in: RoundedRectangle(cornerRadius: 10))
+                                .frame(width:300, height:20)
                             
                             if showNameError {
                                 Text("Nickname is required.")
