@@ -163,19 +163,25 @@ struct PlantSheet: View {
                                 .padding()
                             
                             
-                            NavigationLink {
-                                TipsView( index: $index)
-                            } label: {
-                                HStack {
-                                    Text("Tips")
-                                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                            Text("Tips")
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .padding(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top)
+                            HStack {
+                                NavigationLink {
+                                    TipsView(index: $index)
+                                } label: {
+                                    Text("See more")
+                                        .font(.system(size: 16, weight: .regular, design: .rounded))
+                                        .foregroundStyle(Color(.secondaryLabel))
                                         .padding(.bottom)
                                         .padding(.leading)
                                     Image(systemName: "chevron.right")
                                         .padding(.bottom)
                                 }
                                 .foregroundStyle(.black)
-                                .frame(maxWidth:.infinity, alignment: .leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             
                            
@@ -199,12 +205,18 @@ struct PlantSheet: View {
                         // LARGE CONTENT (JOURNAL)
                         if selectedDetent == .large {
                             VStack {
+                                Text("Journal")
+                                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                                    .padding(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top)
                                 HStack {
                                     NavigationLink {
                                         JournalView(index: $index)
                                     } label: {
-                                        Text("Journal")
-                                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                                        Text("See more")
+                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                            .foregroundStyle(Color(.secondaryLabel))
                                             .padding(.bottom)
                                             .padding(.leading)
                                         Image(systemName: "chevron.right")
@@ -212,7 +224,6 @@ struct PlantSheet: View {
                                     }
                                     .foregroundStyle(.black)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.top)
                                 }
                                 
                                 // ADD JOURNAL ENTRY
