@@ -26,7 +26,8 @@ class PlantViewModel: ObservableObject {
             plantName: plantName,
             plantType: plantType,
             plantIconName: plantIconName,
-            plantDateCreated: Date()
+            plantDateCreated: Date(),
+            plantIsGerminated: false
         )
         plants.append(newPlant)
     }
@@ -65,6 +66,16 @@ class PlantViewModel: ObservableObject {
             print("❌ FM Tips Error: \(error)")
         }
     }
+    
+        func plantIsGerminated(plantID: UUID) {
+            guard let index = plants.firstIndex(where: { $0.id == plantID }) else {
+                return
+            }
+            var updated = plants[index]
+            updated.plantIsGerminated = true
+            plants[index] = updated
+        }
+    
 
     func tips(for plantInfo: PlantInfo) -> [String] {
         let key = plantInfo.name.lowercased()

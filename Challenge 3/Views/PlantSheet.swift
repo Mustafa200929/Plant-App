@@ -135,47 +135,58 @@ struct PlantSheet: View {
                         
                         if selectedDetent == .fraction(0.7) || selectedDetent == .large {
                             
-                            VStack{
-                                if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                                    let remaining = info.germinationMaxDays - plantVM.plantAge(index: index)
-                                    Text("Should germinate in \(max(remaining, 0)) days")
-                                        .padding(.horizontal)
-                                        .padding(.top)
-                                        .fontWeight(.medium)
-                                    
-                                    Text("Look out for sprouts")
-                                        .padding(.bottom)
-                                } else {
-                                    Text("Germination info unavailable")
-                                        .padding()
+                            if plantVM.plants[index].plantIsGerminated {
+                                
+                            }else{
+                                VStack{
+                                    if let info = plantVM.findPlantData(plantType: plant.plantType) {
+                                        let remaining = info.germinationMaxDays - plantVM.plantAge(index: index)
+                                        Text("Should germinate in \(max(remaining, 0)) days")
+                                            .padding(.horizontal)
+                                            .padding(.top)
+                                            .fontWeight(.medium)
+                                        
+                                        Text("Look out for sprouts")
+                                            .padding(.bottom)
+                                    } else {
+                                        Text("Germination info unavailable")
+                                            .padding()
+                                    }
                                 }
+                                .frame(maxWidth:.infinity)
+                                .background(.black.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
+                                .padding(.horizontal)
+                                
+                                    SwipeToConfirm(
+                                        title: "Germinated",
+                                        backgroundTint: Color(hex: "DFFFE9"),
+                                        onConfirm: {
+                                            plantVM.plantIsGerminated(plantID: plantVM.plants[index].id)
+                                        }
+                                    )
+                                    .padding(.horizontal)
                             }
-                            .frame(maxWidth:.infinity)
-                            .background(.black.opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                            .padding(.horizontal)
                             
-                          
-                            Text("Germinated")
-                                .padding()
-                                .glassEffect(.regular.tint(Color(hex:"DFFFE9")).interactive(), in: Capsule())
-                                .frame(maxWidth: .infinity, alignment: .topLeading)
-                                .padding()
-                            
-                            
-                            NavigationLink {
-                                TipsView( index: $index)
-                            } label: {
-                                HStack {
-                                    Text("Tips")
-                                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                            Text("Tips")
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .padding(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top)
+                            HStack {
+                                NavigationLink {
+                                    TipsView(index: $index)
+                                } label: {
+                                    Text("See more")
+                                        .font(.system(size: 16, weight: .regular, design: .rounded))
+                                        .foregroundStyle(Color(.secondaryLabel))
                                         .padding(.bottom)
                                         .padding(.leading)
                                     Image(systemName: "chevron.right")
                                         .padding(.bottom)
                                 }
                                 .foregroundStyle(.black)
-                                .frame(maxWidth:.infinity, alignment: .leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             
                            
@@ -199,12 +210,18 @@ struct PlantSheet: View {
                         // LARGE CONTENT (JOURNAL)
                         if selectedDetent == .large {
                             VStack {
+                                Text("Journal")
+                                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                                    .padding(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top)
                                 HStack {
                                     NavigationLink {
                                         JournalView(index: $index)
                                     } label: {
-                                        Text("Journal")
-                                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                                        Text("See more")
+                                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                                            .foregroundStyle(Color(.secondaryLabel))
                                             .padding(.bottom)
                                             .padding(.leading)
                                         Image(systemName: "chevron.right")
@@ -212,7 +229,6 @@ struct PlantSheet: View {
                                     }
                                     .foregroundStyle(.black)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.top)
                                 }
                                 
                                 // ADD JOURNAL ENTRY
@@ -350,7 +366,8 @@ struct PlantSheet_Previews: PreviewProvider {
             plantName: "Bob",
             plantType: "basil",
             plantIconName: "plant1",
-            plantDateCreated: Date()
+            plantDateCreated: Date(),
+            plantIsGerminated: false
         )
         pv.plants = [samplePlant]
         
