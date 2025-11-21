@@ -27,6 +27,7 @@ class PlantViewModel: ObservableObject {
             plantType: plantType,
             plantIconName: plantIconName,
             plantDateCreated: Date(),
+            plantDateGerminated: Date(),
             plantIsGerminated: false
         )
         plants.append(newPlant)
@@ -73,6 +74,7 @@ class PlantViewModel: ObservableObject {
             }
             var updated = plants[index]
             updated.plantIsGerminated = true
+            updated.plantDateGerminated = Date()
             plants[index] = updated
         }
     
@@ -81,5 +83,6 @@ class PlantViewModel: ObservableObject {
         let key = plantInfo.name.lowercased()
         return tipsForSpecies[key] ?? []
     }
+    
 }
 

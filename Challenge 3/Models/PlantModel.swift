@@ -13,6 +13,7 @@ struct Plant: Identifiable {
     var plantType: String
     var plantIconName: String
     var plantDateCreated: Date
+    var plantDateGerminated: Date
     var plantIsGerminated: Bool
 }
 
