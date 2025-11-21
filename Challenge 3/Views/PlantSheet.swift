@@ -25,7 +25,6 @@ struct PlantSheet: View {
         !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
     }
     
-    // MARK: - Tip Preview (unchanged signature)
     func TipPreview(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
             Image(systemName: "sun.max.fill")
@@ -94,26 +93,7 @@ struct PlantSheet: View {
     .padding(.horizontal)
 }
     var body: some View {
-       
-        if !plantVM.plants.indices.contains(index) {
-            VStack(spacing: 12) {
-                Text("No plant selected")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-                Text("This sheet was opened with an invalid plant index.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Button("Close") {
-                    
-                    selectedDetent = .fraction(0.1)
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            .padding()
-        } else {
-           
             let plant = plantVM.plants[index]
-            
             ZStack{
                 LinearGradient(
                     colors: [
@@ -129,13 +109,11 @@ struct PlantSheet: View {
                 
                 ScrollView {
                     VStack {
-                        
                         HStack {
                             Image(plant.plantIconName)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 44, height: 44)
-                                .padding()
+                                .frame(width: 54, height: 54)
                                 .glassEffect(.regular.tint(.teal.opacity(0.3)))
                             
                             VStack(alignment: .leading) {
@@ -298,42 +276,42 @@ struct PlantSheet: View {
                                         .font(.system(size: 18, weight: .semibold))
                                         .padding()
                                 }
+                                Button(role: .destructive) {
+                                    showDeleteDialog = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "trash.fill")
+                                            .font(.system(size: 20, weight: .bold))
+                                        
+                                        Text("Delete Plant")
+                                            .font(.system(size: 20, weight: .semibold))
+                                    }
+                                    .foregroundStyle(.red)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .fill(Color.red.opacity(0.15))
+                                            .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                                    )
+                                    .padding(.horizontal)
+                                    .padding(.bottom, 30)
+                                }
+                                .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
+                                    Button("Delete Plant", role: .destructive) {
+                                        plantVM.removePlant(at: index)
+                                        selectedDetent = .fraction(0.1)
+                                    }
+                                    Button("Cancel", role: .cancel) {}
+                                } message: {
+                                    Text("Are you sure?")
+                                }
                             }
                         }
                         
                         // ---------------------------
                         // DELETE PLANT BUTTON (NEW)
                         // ---------------------------
-                        Button(role: .destructive) {
-                            showDeleteDialog = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "trash.fill")
-                                    .font(.system(size: 20, weight: .bold))
-                                
-                                Text("Delete Plant")
-                                    .font(.system(size: 20, weight: .semibold))
-                            }
-                            .foregroundStyle(.red)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .fill(Color.red.opacity(0.15))
-                                    .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
-                            )
-                            .padding(.horizontal)
-                            .padding(.bottom, 30)
-                        }
-                        .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
-                            Button("Delete Plant", role: .destructive) {
-                                plantVM.removePlant(at: index)
-                                selectedDetent = .fraction(0.1)
-                            }
-                            Button("Cancel", role: .cancel) {}
-                        } message: {
-                            Text("Are you sure?")
-                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .bottom)
                 }
@@ -361,7 +339,7 @@ struct PlantSheet: View {
             }
         }
     }
-}
+
 
 // MARK: - Preview with sample plant to prevent crashes
 struct PlantSheet_Previews: PreviewProvider {
