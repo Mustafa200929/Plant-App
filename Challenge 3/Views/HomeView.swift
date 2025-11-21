@@ -117,23 +117,24 @@ struct HomeView: View {
                             .frame(width: 340, height: 400)
                             .shadow(color: Color.black.opacity(0.2), radius: 10)
                         
-                        // ------------ FIXED PLANT GRID ------------
                         GeometryReader { geo in
                             let width = geo.size.width
                             
-                            // Auto-resize plants based on how many there are
-                            let itemSize = max(min(width / 3, 90), 50)
+                            // Desired base size
+                            let baseSize: CGFloat = 90
                             
-                            // Number of columns based on size
-                            let columns = Array(
-                                repeating: GridItem(.flexible(), spacing: 12),
-                                count: max(Int(width / itemSize), 1)
-                            )
+                            // Dynamic scaling based on count
+                            let count = plantVM.plants.count
                             
-                            LazyVGrid(columns: columns, spacing: 16) {
+                            // Scale down depending on number of items
+                            let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
+                            
+                            let itemSize = baseSize * scale
+                            
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
                                 ForEach(plantVM.plants.indices, id: \.self) { i in
                                     let plant = plantVM.plants[i]
-                                    
+
                                     VStack(spacing: 6) {
                                         Image(plant.plantIconName)
                                             .resizable()
@@ -142,14 +143,11 @@ struct HomeView: View {
                                             .clipShape(Circle())
                                             .overlay(Circle().stroke(Color.white.opacity(0.6), lineWidth: 2))
                                             .shadow(radius: 4)
-                                        
                                             .onTapGesture {
-                                                guard plantVM.plants.indices.contains(i) else { return }
                                                 index = i
                                                 showSheet = true
                                             }
-                                        
-                                        
+
                                         Text(plant.plantName)
                                             .font(.caption)
                                             .foregroundColor(.black.opacity(0.8))
@@ -158,8 +156,7 @@ struct HomeView: View {
                             }
                             .padding(.horizontal, 20)
                         }
-                        .frame(width: 340, height: 400)
-                        // ------------------------------------------
+                        .frame(width: 340, height: 400) // KEEP your island size the same
                     }
                     
                     // Bottom label
@@ -185,7 +182,6 @@ struct HomeView: View {
                 }
                 .onChange(of: showSheet) { isShowing in
                     if isShowing {
-                        // If the selected index is no longer valid or there are no plants, dismiss immediately
                         if !plantVM.plants.indices.contains(index) || plantVM.plants.isEmpty {
                             showSheet = false
                         }

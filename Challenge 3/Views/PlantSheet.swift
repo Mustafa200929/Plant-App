@@ -43,57 +43,76 @@ struct PlantSheet: View {
     }
     
     func JournalPreview(i: Int) -> some View {
-    HStack{
-        VStack(spacing: 4){
-            Circle()
-                .fill(Color(hex: "7ED957"))
-                .frame(width: 18, height: 18)
-                .overlay(
-                    Circle()
-                        .stroke(Color(hex: "4CAF50"), lineWidth: 2)
-                        .frame(width: 24, height:24)
-                )
-            
-            RoundedRectangle(cornerRadius: 2)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "4CAF50"),
-                            Color(hex: "7ED957")
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
+        HStack{
+            VStack(spacing: 4){
+                Circle()
+                    .fill(Color(hex: "7ED957"))
+                    .frame(width: 18, height: 18)
+                    .overlay(
+                        Circle()
+                            .stroke(Color(hex: "4CAF50"), lineWidth: 2)
+                            .frame(width: 24, height:24)
                     )
-                )
-                .frame(width: 3)
-        }
-        VStack(alignment: .leading){
-            let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
-            let entry = journal.entries[i]
-            
-            Text(entry.date, style: .date)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.secondary)
-            
-            if let note = entry.notes {
-                Text(note)
-                    .font(.system(size: 16, weight: .regular))
+                
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: "4CAF50"),
+                                Color(hex: "7ED957")
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: 3)
             }
-            if let photo = entry.photo{
-                photo
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: 300)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .padding()
+            VStack(alignment: .leading){
+                let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
+                let entry = journal.entries[i]
+                
+                Text(entry.date, style: .date)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                
+                if let note = entry.notes {
+                    Text(note)
+                        .font(.system(size: 16, weight: .regular))
+                }
+                if let photo = entry.photo{
+                    photo
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .padding()
+                }
             }
         }
+        .frame(maxWidth:.infinity, alignment: .leading)
+        .padding(.horizontal)
     }
-    .frame(maxWidth:.infinity, alignment: .leading)
-    .padding(.horizontal)
-}
     var body: some View {
+        
+        if !plantVM.plants.indices.contains(index) {
+            VStack(spacing: 12) {
+                Text("No plant selected")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+                Text("This sheet was opened with an invalid plant index.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("Close") {
+                    
+                    selectedDetent = .fraction(0.1)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+        } else {
+            
             let plant = plantVM.plants[index]
+            
             ZStack{
                 LinearGradient(
                     colors: [
@@ -109,11 +128,13 @@ struct PlantSheet: View {
                 
                 ScrollView {
                     VStack {
+                        
                         HStack {
                             Image(plant.plantIconName)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 54, height: 54)
+                                .frame(width: 44, height: 44)
+                                .padding()
                                 .glassEffect(.regular.tint(.teal.opacity(0.3)))
                             
                             VStack(alignment: .leading) {
@@ -168,28 +189,31 @@ struct PlantSheet: View {
                                     .padding(.horizontal)
                             }
                             
-                            Text("Tips")
-                                .font(.system(size: 24, weight: .bold, design: .rounded))
-                                .padding(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top)
-                            HStack {
-                                NavigationLink {
-                                    TipsView(index: $index)
-                                } label: {
-                                    Text("See more")
-                                        .font(.system(size: 16, weight: .regular, design: .rounded))
-                                        .foregroundStyle(Color(.secondaryLabel))
+                            
+                            Text("Germinated")
+                                .padding()
+                                .glassEffect(.regular.tint(Color(hex:"DFFFE9")).interactive(), in: Capsule())
+                                .frame(maxWidth: .infinity, alignment: .topLeading)
+                                .padding()
+                            
+
+                            
+                            NavigationLink {
+                                TipsView( index: $index)
+                            } label: {
+                                HStack {
+                                    Text("Tips")
+                                        .font(.system(size: 24, weight: .bold, design: .rounded))
                                         .padding(.bottom)
                                         .padding(.leading)
                                     Image(systemName: "chevron.right")
                                         .padding(.bottom)
                                 }
                                 .foregroundStyle(.black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .frame(maxWidth:.infinity, alignment: .leading)
                             }
                             
-                           
+                            
                             if let info = plantVM.findPlantData(plantType: plant.plantType) {
                                 let tips = plantVM.tips(for: info)
                                 if tips.isEmpty {
@@ -202,26 +226,40 @@ struct PlantSheet: View {
                                         ForEach(0..<min(tips.count, 2), id: \.self) { i in
                                             TipPreview(i: i, info: info, tips: tips)
                                         }
+                                        
+                                        
+                                            NavigationLink {
+                                                TipsView(index: $index)
+                                            } label: {
+                                                HStack {
+                                                    Text("See All Tips")
+                                                        .font(.system(size: 18, weight: .bold))
+                                                    Image(systemName: "chevron.right")
+                                                }
+                                                .padding()
+                                                .frame(maxWidth: .infinity)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 24)
+                                                        .fill(Color.black.opacity(0.12))
+                                                )
+                                                .padding(.horizontal)
+                                            }
+                                            .padding(.top, 4)
+                                        
                                     }
                                 }
                             }
                         }
                         
-                        // LARGE CONTENT (JOURNAL)
+                        
                         if selectedDetent == .large {
                             VStack {
-                                Text("Journal")
-                                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                                    .padding(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.top)
                                 HStack {
                                     NavigationLink {
                                         JournalView(index: $index)
                                     } label: {
-                                        Text("See more")
-                                            .font(.system(size: 16, weight: .regular, design: .rounded))
-                                            .foregroundStyle(Color(.secondaryLabel))
+                                        Text("Journal")
+                                            .font(.system(size: 24, weight: .bold, design: .rounded))
                                             .padding(.bottom)
                                             .padding(.leading)
                                         Image(systemName: "chevron.right")
@@ -229,9 +267,10 @@ struct PlantSheet: View {
                                     }
                                     .foregroundStyle(.black)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.top)
                                 }
                                 
-                                // ADD JOURNAL ENTRY
+                                
                                 HStack {
                                     Image(systemName: isExpanded ? "checkmark" : "plus")
                                         .padding()
@@ -292,42 +331,40 @@ struct PlantSheet: View {
                                     Text("No journal entries yet.")
                                         .font(.system(size: 18, weight: .semibold))
                                 }
-                                Button(role: .destructive) {
-                                    showDeleteDialog = true
-                                } label: {
-                                    HStack {
-                                        Image(systemName: "trash.fill")
-                                            .font(.system(size: 20, weight: .bold))
-                                        
-                                        Text("Delete Plant")
-                                            .font(.system(size: 20, weight: .semibold))
-                                    }
-                                    .foregroundStyle(.red)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 24)
-                                            .fill(Color.red.opacity(0.15))
-                                            .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
-                                    )
-                                    .padding(.horizontal)
-                                    .padding(.bottom, 30)
-                                }
-                                .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
-                                    Button("Delete Plant", role: .destructive) {
-                                        plantVM.removePlant(at: index)
-                                        selectedDetent = .fraction(0.1)
-                                    }
-                                    Button("Cancel", role: .cancel) {}
-                                } message: {
-                                    Text("Are you sure?")
-                                }
                             }
                         }
                         
-                        // ---------------------------
-                        // DELETE PLANT BUTTON (NEW)
-                        // ---------------------------
+                        
+                        Button(role: .destructive) {
+                            showDeleteDialog = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "trash.fill")
+                                    .font(.system(size: 20, weight: .bold))
+                                
+                                Text("Delete Plant")
+                                    .font(.system(size: 20, weight: .semibold))
+                            }
+                            .foregroundStyle(.red)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.red.opacity(0.15))
+                                    .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                            )
+                            .padding(.horizontal)
+                            .padding(.bottom, 30)
+                        }
+                        .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
+                            Button("Delete Plant", role: .destructive) {
+                                plantVM.removePlant(at: index)
+                                selectedDetent = .fraction(0.1)
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text("Are you sure?")
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .bottom)
                 }
@@ -355,9 +392,8 @@ struct PlantSheet: View {
             }
         }
     }
+}
 
-
-// MARK: - Preview with sample plant to prevent crashes
 struct PlantSheet_Previews: PreviewProvider {
     static var previews: some View {
         // Create a PlantViewModel and inject a sample plant
