@@ -371,6 +371,10 @@ struct PlantSheet: View {
                                         selectedDetent = .fraction(0.1)
                                     }
                                 }
+                                else{
+                                    Text("No journal entries yet.")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
                                 Button("Cancel", role: .cancel) {}
                             } message: {
                                 Text("Are you sure?")
