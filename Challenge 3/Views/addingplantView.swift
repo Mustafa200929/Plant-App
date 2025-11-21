@@ -68,7 +68,7 @@ struct addingplantView: View {
                     }
                 
                 
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal, showsIndicators: true) {
                     HStack(spacing: 16) {
                         
                         Spacer().frame(width: sideInset)
