@@ -92,7 +92,7 @@ struct HomeView: View {
                             .frame(width: 350, height: 350)
                             .blur(radius: 60)
                             .opacity(0.22)
-                            .offset(y: -260)
+                            .offset(y: -230)
                         Spacer()
                     }
                     .allowsHitTesting(false)
