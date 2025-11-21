@@ -7,13 +7,16 @@ struct TipsView: View {
     @State private var errorMessage: String? = nil
     func TipView(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
-            Image(systemName: "sun.max.fill")
+            Image(systemName: iconForTip(tips[i]))
+                .foregroundStyle(.primary)
+                .font(.system(size: 20))      
                 .padding()
                 .glassEffect(.regular)
-            
+
             Text(tips.indices.contains(i) ? tips[i] : "")
                 .font(.system(size: 16, weight: .regular))
                 .multilineTextAlignment(.leading)
+                .foregroundColor(.primary)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -21,6 +24,7 @@ struct TipsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.horizontal)
     }
+
 
     var body: some View {
         ZStack {
@@ -48,13 +52,7 @@ struct TipsView: View {
                 ScrollView {
                     VStack(spacing: 16) {
 
-                        if loading {
-                            ProgressView("Generating AI tips…")
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding()
-                        }
-
+                       
                         if let error = errorMessage {
                             Text(error)
                                 .foregroundColor(.red)
