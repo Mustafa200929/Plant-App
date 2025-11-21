@@ -20,8 +20,9 @@ struct PlantSheet: View {
     @State private var showPhotoPicker = false
     @State private var refreshID = UUID()
     @State private var showDeleteDialog = false
-    
+    @Environment(\.dismiss) private var dismiss
     @Namespace private var plantNamespace
+    
     private let smooth = Animation.spring(response: 0.35, dampingFraction: 0.85, blendDuration: 0.2)
     
     var canSave: Bool {
@@ -30,7 +31,9 @@ struct PlantSheet: View {
     
     func TipPreview(i: Int, info: PlantInfo, tips: [String]) -> some View {
         HStack {
-            Image(systemName: "sun.max.fill")
+            Image(systemName: iconForTip(tips[i]))
+                .foregroundStyle(.primary)
+                .font(.system(size: 20))
                 .padding()
                 .glassEffect(.regular)
             
@@ -113,7 +116,8 @@ struct PlantSheet: View {
             .ignoresSafeArea()
             
             ScrollView {
-                VStack {
+                VStack{
+                    
                     HStack {
                         Image(plant.plantIconName)
                             .resizable()
@@ -343,99 +347,137 @@ struct PlantSheet: View {
                                     .font(.system(size: 18, weight: .semibold))
                                     .padding()
                             }
-                            Button(role: .destructive) {
-                                showDeleteDialog = true
-                            } label: {
-                                HStack {
-                                    Image(systemName: "trash.fill")
-                                        .font(.system(size: 20, weight: .bold))
-                                    
-                                    Text("Delete Plant")
-                                        .font(.system(size: 20, weight: .semibold))
-                                }
-                                .foregroundStyle(.red)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .fill(Color.red.opacity(0.15))
-                                        .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
-                                )
-                                .padding(.horizontal)
-                                .padding(.bottom, 30)
-                            }
-                            .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
-                                Button("Delete Plant", role: .destructive) {
-                                    withAnimation(smooth) {
-                                        plantVM.removePlant(at: index)
-                                        selectedDetent = .fraction(0.1)
+                            if plantVM.plants.indices.contains(index) {
+                                Button(role: .destructive) {
+                                    showDeleteDialog = true
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "trash.fill")
+                                            .font(.system(size: 20, weight: .bold))
+                                        Text("Delete Plant")
+                                            .font(.system(size: 20, weight: .semibold))
                                     }
+                                    .foregroundStyle(.red)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .fill(Color.red.opacity(0.15))
+                                            .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                                    )
+                                    .padding(.horizontal)
+                                    .padding(.bottom, 30)
                                 }
-                                Button("Cancel", role: .cancel) {}
-                            } message: {
-                                Text("Are you sure?")
+                                .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
+                                    Button("Delete Plant", role: .destructive) {
+                                        withAnimation {
+                                            plantVM.removePlant(at: index)
+                                            selectedDetent = .fraction(0.1)
+                                        }
+                                    }
+                                    Button("Cancel", role: .cancel) {}
+                                } message: {
+                                    Text("Are you sure?")
+                                }
                             }
+                            
                         }
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .animation(smooth, value: selectedDetent)
                     }
                 }
-                        .frame(maxWidth: .infinity, alignment: .bottom)
-                }
-                .animation(smooth, value: selectedDetent)
-                .padding(.top, -20)
+                .frame(maxWidth: .infinity, alignment: .bottom)
             }
-            .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
-            .onChange(of: selectedItem) { item in
-                if let item = item {
-                    Task {
-                        if let data = try? await item.loadTransferable(type: Data.self) {
-                            selectedImage = UIImage(data: data)
-                        }
+            .animation(smooth, value: selectedDetent)
+            .padding(.top, -20)
+        }
+        .photosPicker(isPresented: $showPhotoPicker, selection: $selectedItem, matching: .images)
+        .onChange(of: selectedItem) { item in
+            if let item = item {
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self) {
+                        selectedImage = UIImage(data: data)
                     }
                 }
             }
-            .sheet(isPresented: $cameraViewShown) {
-                CameraView(image: $selectedImage)
-                    .presentationDetents([.large])
-            }
-            .id(refreshID)
-            .task {
-                if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                    await plantVM.loadTips(for: info)
-                }
+        }
+        .sheet(isPresented: $cameraViewShown) {
+            CameraView(image: $selectedImage)
+                .presentationDetents([.large])
+        }
+        .id(refreshID)
+        .task {
+            if let info = plantVM.findPlantData(plantType: plant.plantType) {
+                await plantVM.loadTips(for: info)
             }
         }
     }
-    
-    
-    // MARK: - Preview with sample plant to prevent crashes
-    struct PlantSheet_Previews: PreviewProvider {
-        static var previews: some View {
-            // Create a PlantViewModel and inject a sample plant
-            let pv = PlantViewModel()
-            let samplePlant = Plant(
-                plantName: "Bob",
-                plantType: "basil",
-                plantIconName: "plant1",
-                plantDateCreated: Date(),
-                plantDateGerminated: Date(),
-                plantIsGerminated: false
-            )
-            pv.plants = [samplePlant]
-            
-            let jv = JournalViewModel()
-            return PlantSheet(selectedDetent: .constant(.large), index: .constant(0))
-                .environmentObject(pv)
-                .environmentObject(jv)
-        }
-    }
-
-
-#Preview{
-    PlantSheet(selectedDetent: .constant(.large), index: .constant(0))
-        .environmentObject(PlantViewModel())
-        .environmentObject(JournalViewModel())
 }
 
 
+// MARK: - Preview with sample plant to prevent crashes
+struct PlantSheet_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a PlantViewModel and inject a sample plant
+        let pv = PlantViewModel()
+        let samplePlant = Plant(
+            plantName: "Bob",
+            plantType: "basil",
+            plantIconName: "plant1",
+            plantDateCreated: Date(),
+            plantDateGerminated: Date(),
+            plantIsGerminated: false
+        )
+        pv.plants = [samplePlant]
+        
+        let jv = JournalViewModel()
+        return PlantSheet(selectedDetent: .constant(.large), index: .constant(0))
+            .environmentObject(pv)
+            .environmentObject(jv)
+    }
+}
+private func iconForTip(_ tip: String) -> String {
+    let lower = tip.lowercased()
+
+    if lower.contains("water") || lower.contains("moist") || lower.contains("damp") {
+        return "drop.fill"
+    }
+    if lower.contains("sun") || lower.contains("light") || lower.contains("shade") {
+        return "sun.max.fill"
+    }
+    if lower.contains("soil") || lower.contains("fertile") || lower.contains("mix") {
+        return "leaf.fill"
+    }
+    if lower.contains("temperature") || lower.contains("warm") || lower.contains("cold") {
+        return "thermometer"
+    }
+    if lower.contains("dark") || lower.contains("cover") {
+        return "moon.fill"
+    }
+
+    return "sparkles"
+}
+
+
+#Preview {
+    let pv = PlantViewModel()
+    let samplePlant = Plant(
+        plantName: "Bob",
+        plantType: "Basil",
+        plantIconName: "plant1",
+        plantDateCreated: Date(),
+        plantDateGerminated: Date(),
+        plantIsGerminated: false,
+        position: CGPoint(x: 150, y: 150)
+    )
+    pv.plants = [samplePlant]
+    
+    let jv = JournalViewModel()
+    
+    return PlantSheet(
+        selectedDetent: .constant(.large),
+        index: .constant(0) // guaranteed valid
+    )
+    .environmentObject(pv)
+    .environmentObject(jv)
+}

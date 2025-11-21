@@ -150,7 +150,6 @@ struct HomeView: View {
                     
                 }
                 
-                // Bottom label
                 VStack {
                     Spacer()
                     Text("Click on plant")

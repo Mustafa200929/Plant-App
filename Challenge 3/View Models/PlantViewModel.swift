@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 import FoundationModels
-
+import CoreGraphics
 @MainActor
 class PlantViewModel: ObservableObject {
 
