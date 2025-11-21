@@ -43,71 +43,58 @@ struct PlantSheet: View {
         .padding(.horizontal)
     }
     
-    // MARK: - Journal Preview (uses plant.id)
-    func JournalPreview(i: Int, plant: Plant) -> some View {
-        HStack{
-            VStack(spacing: 4){
-                Circle()
-                    .fill(Color(hex: "7ED957"))
-                    .frame(width: 18, height: 18)
-                    .overlay(
-                        Circle()
-                            .stroke(Color(hex: "4CAF50"), lineWidth: 2)
-                            .frame(width: 24, height:24)
+    func JournalPreview(i: Int) -> some View {
+    HStack{
+        VStack(spacing: 4){
+            Circle()
+                .fill(Color(hex: "7ED957"))
+                .frame(width: 18, height: 18)
+                .overlay(
+                    Circle()
+                        .stroke(Color(hex: "4CAF50"), lineWidth: 2)
+                        .frame(width: 24, height:24)
+                )
+            
+            RoundedRectangle(cornerRadius: 2)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "4CAF50"),
+                            Color(hex: "7ED957")
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(hex: "4CAF50"),
-                                Color(hex: "7ED957")
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 3)
+                )
+                .frame(width: 3)
+        }
+        VStack(alignment: .leading){
+            let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
+            let entry = journal.entries[i]
+            
+            Text(entry.date, style: .date)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.secondary)
+            
+            if let note = entry.notes {
+                Text(note)
+                    .font(.system(size: 16, weight: .regular))
             }
-            VStack(alignment: .leading){
-                let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
-                let entry = journal.entries[i]
-                
-                Text(entry.date, style: .date)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                
-                if let note = entry.notes {
-                    Text(note)
-                        .font(.system(size: 16, weight: .regular))
-                }
-                
-                
-                Text(entry.date, style: .date)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                
-                if let note = entry.notes {
-                    Text(note)
-                        .font(.system(size: 16, weight: .regular))
-                }
-                if let photo = entry.photo {
-                    photo
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxHeight: 300)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .padding()
-                }
+            if let photo = entry.photo{
+                photo
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 300)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding()
             }
         }
-        .frame(maxWidth:.infinity, alignment: .leading)
-        .padding(.horizontal)
     }
-    
-    // MARK: - Body
+    .frame(maxWidth:.infinity, alignment: .leading)
+    .padding(.horizontal)
+}
     var body: some View {
-        // Guard: if index is not valid, show a safe placeholder to avoid crash
+       
         if !plantVM.plants.indices.contains(index) {
             VStack(spacing: 12) {
                 Text("No plant selected")
@@ -117,14 +104,14 @@ struct PlantSheet: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Button("Close") {
-                    // Try to reduce sheet size to dismissed state — host should dismiss the sheet
+                    
                     selectedDetent = .fraction(0.1)
                 }
                 .buttonStyle(.borderedProminent)
             }
             .padding()
         } else {
-            // Safe: bind plant once and use it throughout
+           
             let plant = plantVM.plants[index]
             
             ZStack{
@@ -142,7 +129,7 @@ struct PlantSheet: View {
                 
                 ScrollView {
                     VStack {
-                        // HEADER
+                        
                         HStack {
                             Image(plant.plantIconName)
                                 .resizable()
@@ -168,10 +155,8 @@ struct PlantSheet: View {
                         }
                         .padding()
                         
-                        // MEDIUM + LARGE CONTENT
                         if selectedDetent == .fraction(0.7) || selectedDetent == .large {
                             
-                            // GERMINATION CARD
                             VStack{
                                 if let info = plantVM.findPlantData(plantType: plant.plantType) {
                                     let remaining = info.germinationMaxDays - plantVM.plantAge(index: index)
@@ -192,14 +177,14 @@ struct PlantSheet: View {
                             .clipShape(RoundedRectangle(cornerRadius: 24))
                             .padding(.horizontal)
                             
-                            // GERMINATED BUTTON
+                          
                             Text("Germinated")
                                 .padding()
                                 .glassEffect(.regular.tint(Color(hex:"DFFFE9")).interactive(), in: Capsule())
                                 .frame(maxWidth: .infinity, alignment: .topLeading)
                                 .padding()
                             
-                            // TIPS NAV
+                            
                             NavigationLink {
                                 TipsView( index: $index)
                             } label: {
@@ -215,7 +200,7 @@ struct PlantSheet: View {
                                 .frame(maxWidth:.infinity, alignment: .leading)
                             }
                             
-                            // TIPS PREVIEW
+                           
                             if let info = plantVM.findPlantData(plantType: plant.plantType) {
                                 let tips = plantVM.tips(for: info)
                                 if tips.isEmpty {
@@ -306,7 +291,7 @@ struct PlantSheet: View {
                                 if journal.entries.count > 0 {
                                     let values = journal.entries.prefix(2)
                                     ForEach(0..<values.count, id: \.self) { i in
-                                        JournalPreview(i: i, plant: plant)
+                                        JournalPreview(i: i)
                                     }
                                 } else {
                                     Text("No journal entries yet.")

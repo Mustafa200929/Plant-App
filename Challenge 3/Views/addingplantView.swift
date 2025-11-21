@@ -45,7 +45,7 @@ struct addingplantView: View {
     @Environment(\.dismiss) private var dismiss
     
     let species = [
-        "Aloe Vera","basil","Cactus","Money plant",
+        "Aloe Vera","basil","Cactus","Water spinach",
         "Rubber plant","Jade plant","Spider plant","Snake plant"
     ]
     
@@ -60,7 +60,6 @@ struct addingplantView: View {
             
             VStack {
                 
-                // --- ICON TITLE ---
                 Text("Select an Icon")
                     .font(.title3.weight(.semibold))
                     .padding(.top, 60)
@@ -68,7 +67,7 @@ struct addingplantView: View {
                         onReturn?()
                     }
                 
-                // --- ICON CAROUSEL ---
+                
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
                         
@@ -97,7 +96,7 @@ struct addingplantView: View {
                                     radius: isSelected ? 12 : 0)
                             .frame(width: itemWidth, height: itemHeight)
                             
-                            // dynamic scaling
+                            
                             .background(
                                 GeometryReader { itemProxy in
                                     Color.clear.preference(
@@ -147,9 +146,8 @@ struct addingplantView: View {
                             }
                         }
                     }
+                    
                 }
-                
-                // --- ADD BUTTON ---
                 Button(action: addPlant) {
                     HStack(spacing: 10) {
                         Image(systemName: "leaf.fill")
@@ -173,41 +171,45 @@ struct addingplantView: View {
                 .disabled(isButtonDisabled)
                 .opacity(isButtonDisabled ? 0.45 : 1)
                 .padding(.bottom, 10)
+                
+                
+                
+            }
+            .navigationTitle("Add a Plant!")
+        }
+        
+        
+    }     // --- LOGIC ---
+        private var isButtonDisabled: Bool {
+            nickname.trimmingCharacters(in: .whitespaces).isEmpty ||
+            selectedSpecies == "None" ||
+            selectedIcon == nil
+        }
+        
+        private func addPlant() {
+            if nickname.trimmingCharacters(in: .whitespaces).isEmpty {
+                withAnimation { showNameError = true }
+                return
+            }
+            guard let icon = selectedIcon else { return }
+            
+            plantVM.addPlant(
+                plantName: nickname,
+                plantType: selectedSpecies,
+                plantIconName: icon
+            )
+            
+            onAddComplete?()
+            dismiss()
+            
+            
+            if let info = plantVM.findPlantData(plantType: selectedSpecies) {
+                Task { await plantVM.loadTips(for: info) }
             }
         }
-        .navigationTitle("Add a Plant!")
     }
-    
-    
-    // --- LOGIC ---
-    private var isButtonDisabled: Bool {
-        nickname.trimmingCharacters(in: .whitespaces).isEmpty ||
-        selectedSpecies == "None" ||
-        selectedIcon == nil
-    }
-    
-    private func addPlant() {
-        if nickname.trimmingCharacters(in: .whitespaces).isEmpty {
-            withAnimation { showNameError = true }
-            return
-        }
-        guard let icon = selectedIcon else { return }
-        
-        plantVM.addPlant(
-            plantName: nickname,
-            plantType: selectedSpecies,
-            plantIconName: icon
-        )
-        
-        onAddComplete?()
-        dismiss()
-        
-     
-        if let info = plantVM.findPlantData(plantType: selectedSpecies) {
-            Task { await plantVM.loadTips(for: info) }
-        }
-    }
-}
+
+
 #Preview {
     NavigationStack {
         addingplantView()
