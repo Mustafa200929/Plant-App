@@ -7,8 +7,7 @@ struct HomeView: View {
     @EnvironmentObject var plantVM: PlantViewModel
     @State private var boxOpacity: Double = 1
     @Environment(\.colorScheme) var colorScheme
-    
-    
+    @State private var showAddPlantSheet = false
     
     var body: some View {
         NavigationStack {
@@ -49,23 +48,16 @@ struct HomeView: View {
                     }
                 }
                 // Add Plant Button
-                HStack {
-                    NavigationLink(destination: addingplantView()) {
-                        Image(systemName: "plus")
-                            .padding()
-                            .accessibilityLabel("Add Plant")
-                            .glassEffect(.clear)
-                            .padding()
-                            .foregroundColor(colorScheme == .dark ? .white : .black)
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                
+               
                 
                 
                 // Add Plant Button
+              
+
                 HStack {
-                    NavigationLink(destination: addingplantView()) {
+                    Button(action: {
+                        showAddPlantSheet.toggle()
+                    }) {
                         Image(systemName: "plus")
                             .padding()
                             .accessibilityLabel("Add Plant")
@@ -74,7 +66,16 @@ struct HomeView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                
+                .sheet(isPresented: $showAddPlantSheet) {
+                    Text("Add a New Plant")
+                                .font(.title)
+                                .bold()
+                                .padding()
+                    addingplantView()
+                        .environmentObject(plantVM)
+                       
+                }
+
                 // Glow circle
                 VStack {
                     Circle()
@@ -150,14 +151,7 @@ struct HomeView: View {
                     
                 }
                 
-                VStack {
-                    Spacer()
-                    Text("Click on plant")
-                        .padding()
-                        .foregroundStyle(.white)
-                        .glassEffect(.clear)
-                        .padding(.bottom, 24)
-                }
+                
             }
             .sheet(isPresented: $showSheet) {
                 if plantVM.plants.indices.contains(index) {

@@ -36,7 +36,6 @@ struct PlantSheet: View {
                 .font(.system(size: 20))
                 .padding()
                 .glassEffect(.regular)
-            
             Text(tips.indices.contains(i) ? tips[i] : "")
                 .font(.system(size: 16, weight: .regular))
                 .multilineTextAlignment(.leading)
@@ -436,6 +435,7 @@ struct PlantSheet_Previews: PreviewProvider {
             .environmentObject(jv)
     }
 }
+
 private func iconForTip(_ tip: String) -> String {
     let lower = tip.lowercased()
 
@@ -457,7 +457,6 @@ private func iconForTip(_ tip: String) -> String {
 
     return "sparkles"
 }
-
 
 #Preview {
     let pv = PlantViewModel()

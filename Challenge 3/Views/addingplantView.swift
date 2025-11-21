@@ -1,4 +1,4 @@
-//
+
 //  addingplantView.swift
 //  Challenge 3
 //
@@ -44,7 +44,7 @@ struct addingplantView: View {
     @EnvironmentObject var plantVM: PlantViewModel
     @Environment(\.dismiss) private var dismiss
     
-    let species = [
+    let species = ["Select Plant",
         "Aloe Vera","basil","Cactus","Water spinach",
         "Rubber plant","Jade plant","Spider plant","Snake plant"
     ]
@@ -62,7 +62,7 @@ struct addingplantView: View {
                 
                 Text("Select an Icon")
                     .font(.title3.weight(.semibold))
-                    .padding(.top, 60)
+                    .padding(.top, 10)
                     .onDisappear {
                         onReturn?()
                     }
@@ -122,33 +122,49 @@ struct addingplantView: View {
                         }
                     }
                 }
+                .offset(y:-50)
                 
                 // --- FORM ---
-                Form {
-                    Section {
-                        VStack(alignment: .leading, spacing: 6) {
-                            TextField("Enter a nickname for your plant", text: $nickname)
-                                .padding()
-                                .glassEffect(.clear, in: RoundedRectangle(cornerRadius: 10))
-                                .frame(width:300, height:20)
-                            
-                            if showNameError {
-                                Text("Nickname is required.")
-                                    .foregroundColor(.red)
-                                    .font(.caption)
-                            }
+                VStack(alignment: .leading, spacing: 12) {
+
+                    VStack(alignment: .leading, spacing: 10) {
+
+                
+                        TextField("Enter a nickname for your plant", text: $nickname)
+                            .padding(.vertical, 10)
+
+                        if showNameError {
+                            Text("Nickname is required.")
+                                .foregroundColor(.red)
+                                .font(.caption)
                         }
-                    }
-                    
-                    Section {
+
+                        
+                        Text("Plant:")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
                         Picker("Species", selection: $selectedSpecies) {
-                            ForEach(species, id: \.self) {
-                                Text($0)
+                            ForEach(species, id: \.self) { item in
+                                Text(item)
                             }
                         }
+                        .pickerStyle(.menu)
+                        .offset(x:50, y:-34)
                     }
-                    
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.secondary.opacity(0.4), lineWidth: 1)
+                    )
+                    .frame(width: 350)
+
                 }
+                .padding(.top, -70)
+
+                    
+                    
+                
                 Button(action: addPlant) {
                     HStack(spacing: 10) {
                         Image(systemName: "leaf.fill")
@@ -180,10 +196,10 @@ struct addingplantView: View {
         }
         
         
-    }     // --- LOGIC ---
+    }
         private var isButtonDisabled: Bool {
             nickname.trimmingCharacters(in: .whitespaces).isEmpty ||
-            selectedSpecies == "None" ||
+            selectedSpecies == "Select Plant" ||
             selectedIcon == nil
         }
         
