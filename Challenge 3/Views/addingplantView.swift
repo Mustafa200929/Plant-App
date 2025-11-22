@@ -169,8 +169,10 @@ struct addingplantView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "leaf.fill")
                             .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.black)
                         Text("Add Plant")
                             .font(.headline)
+                            .foregroundStyle(.black)
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
