@@ -156,7 +156,7 @@ struct HomeView: View {
             .sheet(isPresented: $showSheet) {
                 if plantVM.plants.indices.contains(index) {
                     NavigationStack {
-                        PlantSheet(selectedDetent: $selectedDetent, index: $index)
+                        PlantSheet(selectedDetent: $selectedDetent, plant: $plantVM.plants[index])
                             .presentationDetents(
                                 [.fraction(0.1), .fraction(0.7), .large],
                                 selection: $selectedDetent

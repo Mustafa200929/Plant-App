@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TipsView: View {
     @EnvironmentObject var plantVM: PlantViewModel
-    @Binding var index: Int
+    @Binding var plant: Plant
     @State private var loading = false
     @State private var errorMessage: String? = nil
     func TipView(i: Int, info: PlantInfo, tips: [String]) -> some View {
@@ -58,7 +58,7 @@ struct TipsView: View {
                                 .foregroundColor(.red)
                                 .padding()
                         }
-                        if let info = plantVM.findPlantData(plantType: plantVM.plants[index].plantType) {
+                        if let info = plantVM.findPlantData(plantType: plant.plantType) {
                             let tips = plantVM.tips(for: info)
                             
                             if tips.isEmpty {
@@ -127,6 +127,16 @@ struct TipsView: View {
 }
 
 #Preview {
-    TipsView(index: .constant(0))
+        let plant = Plant(
+            id: UUID(),
+            plantName: "Bob",
+            plantType: "Basil",
+            plantIconName: "sun",
+            plantDateCreated: Date(),
+            plantDateGerminated: Date(),
+            plantIsGerminated: false
+        )
+    
+    TipsView(plant: .constant(plant) )
         .environmentObject(PlantViewModel())
 }

@@ -8,7 +8,7 @@ import PhotosUI
 
 struct PlantSheet: View {
     @Binding var selectedDetent: PresentationDetent
-    @Binding var index: Int
+    @Binding var plant: Plant
     @EnvironmentObject var plantVM: PlantViewModel
     @EnvironmentObject var journalVM: JournalViewModel
     @State private var isExpanded = false
@@ -73,7 +73,7 @@ struct PlantSheet: View {
                     .frame(width: 3)
             }
             VStack(alignment: .leading){
-                let journal = journalVM.returnJournal(for: plantVM.plants[index].id)
+                let journal = journalVM.returnJournal(for: plant.id)
                 let entry = journal.entries[i]
                 
                 Text(entry.date, style: .date)
@@ -100,7 +100,6 @@ struct PlantSheet: View {
         .animation(smooth, value: i)
     }
     var body: some View {
-        let plant = plantVM.plants[index]
         ZStack{
             LinearGradient(
                 colors: [
@@ -133,18 +132,18 @@ struct PlantSheet: View {
                         
                         Spacer()
                         
-                        let age = plantVM.plantAge(index: index)
+                        let age = plantVM.plantAge(plant: plant)
                         Text(age == 0 ? "Just born!" :
                                 age == 1 ? "1 day old" :
                                 "\(age) days old")
                         .fontWeight(.semibold)
                     }
                     .padding()
-                    .animation(smooth, value: plantVM.plants[index].plantIsGerminated)
+                    .animation(smooth, value: plant.plantIsGerminated)
                     
                     if selectedDetent == .fraction(0.7) || selectedDetent == .large {
                         
-                        if plantVM.plants[index].plantIsGerminated {
+                        if plant.plantIsGerminated {
                             HStack(spacing: 12) {
                                 Image(systemName: "leaf.fill")
                                     .font(.system(size: 22, weight: .bold))
@@ -161,7 +160,7 @@ struct PlantSheet: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Germinated!")
                                         .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                    let created = plantVM.plants[index].plantDateGerminated
+                                    let created = plant.plantDateGerminated
                                     Text("\(created, style: .date)")
                                         .font(.system(size: 14, weight: .medium))
                                         .foregroundStyle(.secondary)
@@ -187,7 +186,7 @@ struct PlantSheet: View {
                             Group {
                                 VStack{
                                     if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                                        let remaining = info.germinationMaxDays - plantVM.plantAge(index: index)
+                                        let remaining = info.germinationMaxDays - plantVM.plantAge(plant: plant)
                                         Text("Should germinate in \(max(remaining, 0)) days")
                                             .padding(.horizontal)
                                             .padding(.top)
@@ -211,7 +210,7 @@ struct PlantSheet: View {
                                     backgroundTint: Color(hex: "DFFFE9"),
                                     onConfirm: {
                                         withAnimation(smooth) {
-                                            plantVM.plantIsGerminated(plantID: plantVM.plants[index].id)
+                                            plantVM.plantIsGerminated(plant: plant)
                                         }
                                     }
                                 )
@@ -224,7 +223,7 @@ struct PlantSheet: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             NavigationLink {
-                                TipsView(index: $index)
+                                TipsView(plant: $plant)
                             } label: {
                                 HStack(spacing:0){
                                     Text("See more")
@@ -259,7 +258,7 @@ struct PlantSheet: View {
                     }
                     
                     // LARGE CONTENT (JOURNAL)
-                    if selectedDetent == .large || (selectedDetent == .fraction(0.7) && plantVM.plants[index].plantIsGerminated){
+                    if selectedDetent == .large || (selectedDetent == .fraction(0.7) && plant.plantIsGerminated){
                         VStack {
                             Text("Journal")
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -268,7 +267,7 @@ struct PlantSheet: View {
                                 .padding(.top)
                             HStack {
                                 NavigationLink {
-                                    TipsView(index: $index)
+                                    TipsView(plant: $plant)
                                 } label: {
                                     HStack(spacing:0){
                                         Text("See more")
@@ -346,7 +345,7 @@ struct PlantSheet: View {
                                     .font(.system(size: 18, weight: .semibold))
                                     .padding()
                             }
-                            if plantVM.plants.indices.contains(index) {
+                          
                                 Button(role: .destructive) {
                                     showDeleteDialog = true
                                 } label: {
@@ -370,7 +369,7 @@ struct PlantSheet: View {
                                 .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
                                     Button("Delete Plant", role: .destructive) {
                                         withAnimation {
-                                            plantVM.removePlant(at: index)
+                                            plantVM.removePlant(plant: plant)
                                             selectedDetent = .fraction(0.1)
                                         }
                                     }
@@ -378,7 +377,6 @@ struct PlantSheet: View {
                                 } message: {
                                     Text("Are you sure?")
                                 }
-                            }
                             
                         }
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -414,27 +412,6 @@ struct PlantSheet: View {
 }
 
 
-// MARK: - Preview with sample plant to prevent crashes
-struct PlantSheet_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a PlantViewModel and inject a sample plant
-        let pv = PlantViewModel()
-        let samplePlant = Plant(
-            plantName: "Bob",
-            plantType: "basil",
-            plantIconName: "plant1",
-            plantDateCreated: Date(),
-            plantDateGerminated: Date(),
-            plantIsGerminated: false
-        )
-        pv.plants = [samplePlant]
-        
-        let jv = JournalViewModel()
-        return PlantSheet(selectedDetent: .constant(.large), index: .constant(0))
-            .environmentObject(pv)
-            .environmentObject(jv)
-    }
-}
 
 private func iconForTip(_ tip: String) -> String {
     let lower = tip.lowercased()
@@ -475,8 +452,9 @@ private func iconForTip(_ tip: String) -> String {
     
     return PlantSheet(
         selectedDetent: .constant(.large),
-        index: .constant(0) // guaranteed valid
+        plant: .constant(samplePlant)
     )
     .environmentObject(pv)
     .environmentObject(jv)
 }
+
