@@ -10,7 +10,7 @@ import PhotosUI
 struct JournalView: View {
     @EnvironmentObject var journalVM: JournalViewModel
     @EnvironmentObject var plantVM: PlantViewModel
-    @Binding var index: Int
+    @Bindable var plant: Plant
     @State private var isExpanded = false
     @State private var note = ""
     @State private var showDialog = false
@@ -48,7 +48,7 @@ struct JournalView: View {
                         .onTapGesture {
                             withAnimation{
                                 if canSave{
-                                    journalVM.addJournalEntry(plantID: plantVM.plants[index].id, notes: note, photo: selectedImage)
+                                    journalVM.addJournalEntry(plantID: plant.id, notes: note, photo: selectedImage)
                                     isExpanded.toggle()
                                     selectedImage = nil
                                     note = ""
@@ -91,7 +91,7 @@ struct JournalView: View {
                     }
                 }
                 .padding()
-                ForEach(0..<journalVM.returnJournal(for: plantVM.plants[index].id).entries.count){i in
+                ForEach(0..<journalVM.returnJournal(for: plant.id).entries.count){i in
                     HStack{
                         VStack(spacing: 4){
                             Circle()
@@ -117,15 +117,15 @@ struct JournalView: View {
                                 .frame(width: 3)
                         }
                         VStack(alignment: .leading){
-                            Text(journalVM.returnJournal(for: plantVM.plants[index].id).entries[i].date, style: .date)
+                            Text(journalVM.returnJournal(for: plant.id).entries[i].date, style: .date)
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundStyle(.secondary)
                             
-                            if let note = journalVM.returnJournal(for: plantVM.plants[index].id).entries[i].notes{
+                            if let note = journalVM.returnJournal(for: plant.id).entries[i].notes{
                                 Text(note)
                                     .font(.system(size: 16, weight: .regular))
                             }
-                            if let photo = journalVM.returnJournal(for: plantVM.plants[index].id).entries[i].photo{
+                            if let photo = journalVM.returnJournal(for: plant.id).entries[i].photo{
                                 photo
                                     .resizable()
                                     .scaledToFit()
@@ -160,8 +160,4 @@ struct JournalView: View {
 }
 
 
-#Preview{
-    JournalView(index: .constant(0))
-        .environmentObject(JournalViewModel())
-        .environmentObject(PlantViewModel())
-}
+

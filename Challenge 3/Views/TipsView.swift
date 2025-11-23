@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TipsView: View {
     @EnvironmentObject var plantVM: PlantViewModel
-    @Binding var plant: Plant
+    @Bindable var plant: Plant
     @State private var loading = false
     @State private var errorMessage: String? = nil
     func TipView(i: Int, info: PlantInfo, tips: [String]) -> some View {
@@ -86,10 +86,8 @@ struct TipsView: View {
         }
     }
 
-    // MARK: Load tips on appear
     private func loadIfNeeded() async {
-        guard let plant = plantVM.plants.first,
-              let info = plantVM.findPlantData(plantType: plant.plantType)
+              guard let info = plantVM.findPlantData(plantType: plant.plantType)
         else {
             errorMessage = "No plant data found."
             return
@@ -137,6 +135,6 @@ struct TipsView: View {
             plantIsGerminated: false
         )
     
-    TipsView(plant: .constant(plant) )
+    TipsView(plant: plant)
         .environmentObject(PlantViewModel())
 }

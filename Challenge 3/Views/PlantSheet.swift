@@ -5,10 +5,11 @@
 
 import SwiftUI
 import PhotosUI
+import SwiftData
 
 struct PlantSheet: View {
     @Binding var selectedDetent: PresentationDetent
-    @Binding var plant: Plant
+    @Bindable var plant: Plant
     @EnvironmentObject var plantVM: PlantViewModel
     @EnvironmentObject var journalVM: JournalViewModel
     @State private var isExpanded = false
@@ -18,10 +19,10 @@ struct PlantSheet: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var cameraViewShown: Bool = false
     @State private var showPhotoPicker = false
-    @State private var refreshID = UUID()
     @State private var showDeleteDialog = false
     @Environment(\.dismiss) private var dismiss
     @Namespace private var plantNamespace
+    @Environment(\.modelContext) var modelContext
     
     private let smooth = Animation.spring(response: 0.35, dampingFraction: 0.85, blendDuration: 0.2)
     
@@ -223,7 +224,7 @@ struct PlantSheet: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             NavigationLink {
-                                TipsView(plant: $plant)
+                                TipsView(plant: plant)
                             } label: {
                                 HStack(spacing:0){
                                     Text("See more")
@@ -267,7 +268,7 @@ struct PlantSheet: View {
                                 .padding(.top)
                             HStack {
                                 NavigationLink {
-                                    TipsView(plant: $plant)
+                                    JournalView(plant: plant)
                                 } label: {
                                     HStack(spacing:0){
                                         Text("See more")
@@ -282,7 +283,6 @@ struct PlantSheet: View {
                                 }
                             }
                             
-                            // ADD JOURNAL ENTRY
                             HStack {
                                 Image(systemName: isExpanded ? "checkmark" : "plus")
                                     .padding()
@@ -301,7 +301,6 @@ struct PlantSheet: View {
                                                 isExpanded.toggle()
                                                 selectedImage = nil
                                                 note = ""
-                                                refreshID = UUID()
                                             } else {
                                                 isExpanded.toggle()
                                             }
@@ -369,7 +368,7 @@ struct PlantSheet: View {
                                 .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
                                     Button("Delete Plant", role: .destructive) {
                                         withAnimation {
-                                            plantVM.removePlant(plant: plant)
+                                            plantVM.removePlant(plant: plant, context: modelContext)
                                             selectedDetent = .fraction(0.1)
                                         }
                                     }
@@ -402,7 +401,6 @@ struct PlantSheet: View {
             CameraView(image: $selectedImage)
                 .presentationDetents([.large])
         }
-        .id(refreshID)
         .task {
             if let info = plantVM.findPlantData(plantType: plant.plantType) {
                 await plantVM.loadTips(for: info)
@@ -433,28 +431,5 @@ private func iconForTip(_ tip: String) -> String {
     }
 
     return "sparkles"
-}
-
-#Preview {
-    let pv = PlantViewModel()
-    let samplePlant = Plant(
-        plantName: "Bob",
-        plantType: "Basil",
-        plantIconName: "plant1",
-        plantDateCreated: Date(),
-        plantDateGerminated: Date(),
-        plantIsGerminated: false,
-        position: CGPoint(x: 150, y: 150)
-    )
-    pv.plants = [samplePlant]
-    
-    let jv = JournalViewModel()
-    
-    return PlantSheet(
-        selectedDetent: .constant(.large),
-        plant: .constant(samplePlant)
-    )
-    .environmentObject(pv)
-    .environmentObject(jv)
 }
 

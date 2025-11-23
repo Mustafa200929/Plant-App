@@ -1,14 +1,18 @@
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @State private var showSheet = false
+    @State private var selectedPlant: Plant?
     @State private var index: Int = 0
     @State private var selectedDetent: PresentationDetent = .fraction(0.1)
-    @EnvironmentObject var plantVM: PlantViewModel
     @State private var boxOpacity: Double = 1
-    @Environment(\.colorScheme) var colorScheme
     @State private var showAddPlantSheet = false
-    
+    @EnvironmentObject var plantVM: PlantViewModel
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.modelContext) var modelContext
+    @Query var plants: [Plant]
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -47,13 +51,7 @@ struct HomeView: View {
                         boxOpacity = 0
                     }
                 }
-                // Add Plant Button
-               
-                
-                
-                // Add Plant Button
-              
-
+    
                 HStack {
                     Button(action: {
                         showAddPlantSheet.toggle()
@@ -72,11 +70,8 @@ struct HomeView: View {
                                 .bold()
                                 .padding()
                     addingplantView()
-                        .environmentObject(plantVM)
-                       
                 }
 
-                // Glow circle
                 VStack {
                     Circle()
                         .fill(Color.white)
@@ -88,7 +83,6 @@ struct HomeView: View {
                 }
                 .allowsHitTesting(false)
                 
-                // Main Rounded Container
                 ZStack {
                     RoundedRectangle(cornerRadius: 180)
                         .fill(Color(hex: "F2E0C2"))
@@ -111,12 +105,12 @@ struct HomeView: View {
                     GeometryReader { geo in
                         let islandSize = CGSize(width: 340, height: 400)
                         let baseSize: CGFloat = 90
-                        let count = plantVM.plants.count
+                        let count = plants.count
                         let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
                         let itemSize = baseSize * scale
 
                         ZStack {
-                            ForEach(plantVM.plants) { plant in
+                            ForEach(plants) { plant in
                                 let pos = plantVM.positions[plant.id] ??
                                     plantVM.randomPositionAvoidingOverlap(
                                         islandSize: islandSize,
@@ -133,7 +127,8 @@ struct HomeView: View {
                                         .glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.gray.opacity(0.35)))
                                         .shadow(radius: 4)
                                         .onTapGesture {
-                                            index = plantVM.plants.firstIndex(where: { $0.id == plant.id }) ?? 0
+                                            selectedPlant = plant
+                                            index = plants.firstIndex(where: { $0.id == plant.id }) ?? 0
                                             showSheet = true
                                         }
 
@@ -154,9 +149,9 @@ struct HomeView: View {
                 
             }
             .sheet(isPresented: $showSheet) {
-                if plantVM.plants.indices.contains(index) {
+                if plants.indices.contains(index) {
                     NavigationStack {
-                        PlantSheet(selectedDetent: $selectedDetent, plant: $plantVM.plants[index])
+                        PlantSheet(selectedDetent: $selectedDetent, plant: selectedPlant!)
                             .presentationDetents(
                                 [.fraction(0.1), .fraction(0.7), .large],
                                 selection: $selectedDetent
@@ -166,14 +161,14 @@ struct HomeView: View {
             }
             .onChange(of: showSheet) { isShowing in
                 if isShowing {
-                    if !plantVM.plants.indices.contains(index) || plantVM.plants.isEmpty {
+                    if !plants.indices.contains(index) || plants.isEmpty {
                         showSheet = false
                     }
                 }
             }
-            .onChange(of: plantVM.plants.count) { _ in
+            .onChange(of: plants.count) { _ in
                 if showSheet {
-                    if !plantVM.plants.indices.contains(index) || plantVM.plants.isEmpty {
+                    if !plants.indices.contains(index) || plants.isEmpty {
                         showSheet = false
                     }
                 }

@@ -6,21 +6,21 @@
 //
 
 import SwiftUI
+import SwiftData
 import Combine
 import FoundationModels
 import CoreGraphics
-@MainActor
+
+
 class PlantViewModel: ObservableObject {
-    
-    @Published var plants: [Plant] = []
     @Published var tipsForSpecies: [String : [String]] = [:]
     @Published var islandSize: CGSize = .zero
     @Published var positions: [UUID : CGPoint] = [:]
     
     private let tipGenerator = TipGenerator()
     
-    func addPlant(plantName: String, plantType: String, plantIconName: String){
-        var newPlant = Plant(
+    func addPlant(plantName: String, plantType: String, plantIconName: String, context: ModelContext, plants: [Plant]){
+        let newPlant = Plant(
             plantName: plantName,
             plantType: plantType,
             plantIconName: plantIconName,
@@ -29,14 +29,15 @@ class PlantViewModel: ObservableObject {
             plantIsGerminated: false
         )
         if islandSize != .zero {
-            newPlant.position = assignRandomPosition(in: islandSize)
+            let p = assignRandomPosition(in: islandSize, plants: plants)
+            newPlant.positionX = p.x
+            newPlant.positionY = p.y
         }
-        
-        plants.append(newPlant)
+        context.insert(newPlant)
     }
     
-    func removePlant(plant: Plant) {
-        plants.removeAll { $0.id == plant.id }
+    func removePlant(plant: Plant, context: ModelContext) {
+        context.delete(plant)
     }
     
     func plantAge(plant: Plant) -> Int {
@@ -59,13 +60,8 @@ class PlantViewModel: ObservableObject {
     }
     
     func plantIsGerminated(plant: Plant) {
-        guard let index = plants.firstIndex(where: { $0.id == plant.id}) else {
-            return
-        }
-        var updated = plants[index]
-        updated.plantIsGerminated = true
-        updated.plantDateGerminated = Date()
-        plants[index] = updated
+        plant.plantIsGerminated = true
+        plant.plantDateGerminated = Date()
     }
     
     
@@ -74,7 +70,7 @@ class PlantViewModel: ObservableObject {
         return tipsForSpecies[key] ?? []
     }
     
-    func assignRandomPosition(in size: CGSize) -> CGPoint {
+    func assignRandomPosition(in size: CGSize, plants: [Plant]) -> CGPoint {
         let radius: CGFloat = 50 // temp radius, real size is scaled later
         var newPoint: CGPoint
         var attempts = 0

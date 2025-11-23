@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct Challenge_3App: App {
@@ -20,10 +21,11 @@ struct Challenge_3App: App {
                     .environmentObject(JournalViewModel())
             } else {
                 StoryFlow()
-                    .environmentObject(PlantViewModel())
-                    .environmentObject(JournalViewModel())
+                    .environmentObject(plantVM)
+                    .environmentObject(journalVM)
             }
         }
+        .modelContainer(for: Plant.self)
     }
 }
 

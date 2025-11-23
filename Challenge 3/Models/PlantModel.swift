@@ -6,8 +6,10 @@
 //
 import Foundation
 import CoreGraphics
+import SwiftData
 
-struct Plant: Identifiable {
+@Model
+class Plant: Identifiable {
     var id = UUID()
     var plantName: String
     var plantType: String
@@ -15,7 +17,23 @@ struct Plant: Identifiable {
     var plantDateCreated: Date
     var plantDateGerminated: Date
     var plantIsGerminated: Bool
-    var position: CGPoint = .zero
+    var positionX: Double
+    var positionY: Double
+    var position: CGPoint{
+        CGPoint(x: positionX, y: positionY)
+    }
+    
+    init(id: UUID = UUID(), plantName: String, plantType: String, plantIconName: String, plantDateCreated: Date, plantDateGerminated: Date, plantIsGerminated: Bool, positionX: Double = .zero, positionY: Double = .zero) {
+        self.id = id
+        self.plantName = plantName
+        self.plantType = plantType
+        self.plantIconName = plantIconName
+        self.plantDateCreated = plantDateCreated
+        self.plantDateGerminated = plantDateGerminated
+        self.plantIsGerminated = plantIsGerminated
+        self.positionX = positionX
+        self.positionY = positionY
+    }
 }
 
 struct PlantTip: Identifiable {

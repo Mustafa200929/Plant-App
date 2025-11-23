@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 private struct ItemCenterPreferenceKey: PreferenceKey {
     static var defaultValue: [String: CGFloat] = [:]
@@ -28,21 +29,16 @@ let PlantIcons: [String] = [
 ]
 
 struct addingplantView: View {
-    
-    // RETURN HANDLER
     var onReturn: (() -> Void)? = nil
     var onAddComplete: (() -> Void)? = nil
-    
-    // FORM FIELDS
     @State private var selectedIcon: String? = nil
     @State private var nickname: String = ""
     @State private var selectedSpecies = "None"
-    
-    // ERROR HANDLING
     @State private var showNameError = false
-    
     @EnvironmentObject var plantVM: PlantViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) var modelContext
+    @Query var plants: [Plant]
     
     let species = ["Select Plant",
         "Aloe Vera","basil","Cactus","Water spinach",
@@ -213,7 +209,9 @@ struct addingplantView: View {
             plantVM.addPlant(
                 plantName: nickname,
                 plantType: selectedSpecies,
-                plantIconName: icon
+                plantIconName: icon,
+                context: modelContext,
+                plants: plants
             )
             
             onAddComplete?()
@@ -227,9 +225,4 @@ struct addingplantView: View {
     }
 
 
-#Preview {
-    NavigationStack {
-        addingplantView()
-            .environmentObject(PlantViewModel())
-    }
-}
+
