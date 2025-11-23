@@ -27,7 +27,12 @@ class PlantViewModel: ObservableObject {
             plantIsGerminated: false
         )
         if islandSize != .zero {
-            let p = assignRandomPosition(in: islandSize, plants: plants)
+            let islandSize = CGSize(width: 340, height: 400)
+            let baseSize: CGFloat = 90
+            let count = plants.count
+            let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
+            let itemSize = baseSize * scale
+            let p = assignRandomPosition(in: islandSize, plants: plants, itemSize: itemSize)
             newPlant.positionX = p.x
             newPlant.positionY = p.y
         }
@@ -68,43 +73,30 @@ class PlantViewModel: ObservableObject {
         return tipsForSpecies[key] ?? []
     }
 
-    func assignRandomPosition(in size: CGSize, plants: [Plant]) -> CGPoint {
-            let radius: CGFloat = 50
-            var newPoint: CGPoint
-            var attempts = 0
-            repeat {
-                attempts += 1
-                newPoint = CGPoint(
-                    x: CGFloat.random(in: 60...(size.width - 60)),
-                    y: CGFloat.random(in: 60...(size.height - 60))
-                )
-                let overlap = plants.contains { existing in
-                    let dx = existing.position.x - newPoint.x
-                    let dy = existing.position.y - newPoint.y
-                    return sqrt(dx*dx + dy*dy) < (radius * 2)
-                }
-                if !overlap {return newPoint}
-            } while attempts < 50
-            return newPoint
-        }
-    
-   /* func assignRandomPosition(in size: CGSize, plants: [Plant]) -> CGPoint {
-        let radius: CGFloat = 50 // temp radius, real size is scaled later
-        var newPoint: CGPoint
-        var attempts = 0
-        repeat {
-            attempts += 1
-            newPoint = CGPoint(
-                x: CGFloat.random(in: 60...(size.width - 60)),
-                y: CGFloat.random(in: 60...(size.height - 60))
+    func assignRandomPosition(in size: CGSize, plants: [Plant], itemSize: CGFloat) -> CGPoint {
+        let radius = islandSize.width / 2
+        let innerRadius = radius - itemSize/2
+        let center = CGPoint(x: radius, y: radius)
+        let minimumGap: CGFloat = itemSize * 0.45
+        let maxAttempts = 200
+        for _ in 0..<maxAttempts {
+            let angle = CGFloat.random(in: 0...(2 * .pi))
+            let dist = CGFloat.random(in: 0...innerRadius)
+
+            let candidate = CGPoint(
+                x: center.x + cos(angle) * dist,
+                y: center.y + sin(angle) * dist
             )
-            let overlap = plants.contains { existing in
-                let dx = existing.position.x - newPoint.x
-                let dy = existing.position.y - newPoint.y
-                return sqrt(dx*dx + dy*dy) < (radius * 2)
+            let overlapping = plants.contains { existing in
+                let dx = existing.position.x - candidate.x
+                let dy = existing.position.y - candidate.y
+                return sqrt(dx*dx + dy*dy) < (itemSize + minimumGap)
             }
-            if !overlap {return newPoint}
-        } while attempts < 50
-        return newPoint
-    } */
+            if !overlapping {
+                return candidate
+            }
+        }
+        return center
+    }
+
 }

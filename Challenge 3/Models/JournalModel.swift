@@ -11,7 +11,6 @@ struct Journal: Identifiable{
     var id = UUID()
     var plantID: UUID
     var entries: [JournalEntry]
-    
 }
 
 struct JournalEntry: Identifiable{
