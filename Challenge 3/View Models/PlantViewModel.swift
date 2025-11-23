@@ -87,4 +87,24 @@ class PlantViewModel: ObservableObject {
             } while attempts < 50
             return newPoint
         }
+    
+   /* func assignRandomPosition(in size: CGSize, plants: [Plant]) -> CGPoint {
+        let radius: CGFloat = 50 // temp radius, real size is scaled later
+        var newPoint: CGPoint
+        var attempts = 0
+        repeat {
+            attempts += 1
+            newPoint = CGPoint(
+                x: CGFloat.random(in: 60...(size.width - 60)),
+                y: CGFloat.random(in: 60...(size.height - 60))
+            )
+            let overlap = plants.contains { existing in
+                let dx = existing.position.x - newPoint.x
+                let dy = existing.position.y - newPoint.y
+                return sqrt(dx*dx + dy*dy) < (radius * 2)
+            }
+            if !overlap {return newPoint}
+        } while attempts < 50
+        return newPoint
+    } */
 }
