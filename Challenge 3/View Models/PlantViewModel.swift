@@ -14,9 +14,7 @@ import CoreGraphics
 
 class PlantViewModel: ObservableObject {
     @Published var tipsForSpecies: [String : [String]] = [:]
-    @Published var islandSize: CGSize = .zero
-    @Published var positions: [UUID : CGPoint] = [:]
-    
+    @Published var islandSize: CGSize = CGSize(width: 340, height: 400)
     private let tipGenerator = TipGenerator()
     
     func addPlant(plantName: String, plantType: String, plantIconName: String, context: ModelContext, plants: [Plant]){
@@ -69,51 +67,24 @@ class PlantViewModel: ObservableObject {
         let key = plantInfo.name.lowercased()
         return tipsForSpecies[key] ?? []
     }
-    
+
     func assignRandomPosition(in size: CGSize, plants: [Plant]) -> CGPoint {
-        let radius: CGFloat = 50 // temp radius, real size is scaled later
-        var newPoint: CGPoint
-        var attempts = 0
-        repeat {
-            attempts += 1
-            newPoint = CGPoint(
-                x: CGFloat.random(in: 60...(size.width - 60)),
-                y: CGFloat.random(in: 60...(size.height - 60))
-            )
-            let overlap = plants.contains { existing in
-                let dx = existing.position.x - newPoint.x
-                let dy = existing.position.y - newPoint.y
-                return sqrt(dx*dx + dy*dy) < (radius * 2)
-            }
-            if !overlap {return newPoint}
-        } while attempts < 50
-        return newPoint
-    }
-    
-    func randomPositionAvoidingOverlap(islandSize: CGSize,itemSize: CGFloat,plantID: UUID) -> CGPoint {
-        let radius = islandSize.width / 2
-        let innerRadius = radius - itemSize/2
-        let center = CGPoint(x: radius, y: radius)
-        let minimumGap: CGFloat = itemSize * 0.35
-        let maxAttempts = 200
-        for _ in 0..<maxAttempts {
-            let angle = CGFloat.random(in: 0...(2 * .pi))
-            let dist = CGFloat.random(in: 0...innerRadius)
-            let candidate = CGPoint(
-                x: center.x + cos(angle) * dist,
-                y: center.y + sin(angle) * dist
-            )
-            let collision = positions.values.contains { existing in
-                hypot(existing.x - candidate.x, existing.y - candidate.y)
-                < (itemSize + minimumGap)
-            }
-            if !collision {
-                positions[plantID] = candidate
-                return candidate
-            }
+            let radius: CGFloat = 50
+            var newPoint: CGPoint
+            var attempts = 0
+            repeat {
+                attempts += 1
+                newPoint = CGPoint(
+                    x: CGFloat.random(in: 60...(size.width - 60)),
+                    y: CGFloat.random(in: 60...(size.height - 60))
+                )
+                let overlap = plants.contains { existing in
+                    let dx = existing.position.x - newPoint.x
+                    let dy = existing.position.y - newPoint.y
+                    return sqrt(dx*dx + dy*dy) < (radius * 2)
+                }
+                if !overlap {return newPoint}
+            } while attempts < 50
+            return newPoint
         }
-        let fallback = center
-        positions[plantID] = fallback
-        return fallback
-    }
 }

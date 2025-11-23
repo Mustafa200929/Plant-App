@@ -111,13 +111,7 @@ struct HomeView: View {
 
                         ZStack {
                             ForEach(plants) { plant in
-                                let pos = plantVM.positions[plant.id] ??
-                                    plantVM.randomPositionAvoidingOverlap(
-                                        islandSize: islandSize,
-                                        itemSize: itemSize,
-                                        plantID: plant.id
-                                    )
-
+                                let pos = plant.position 
                                 VStack(spacing: 6) {
                                     Image(plant.plantIconName)
                                         .resizable()
