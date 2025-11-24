@@ -10,6 +10,7 @@ import PhotosUI
 struct JournalView: View {
     @EnvironmentObject var journalVM: JournalViewModel
     @EnvironmentObject var plantVM: PlantViewModel
+    @Environment(\.modelContext) var modelContext
     @Bindable var plant: Plant
     @State private var isExpanded = false
     @State private var note = ""
@@ -18,15 +19,16 @@ struct JournalView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var cameraViewShown: Bool = false
     @State private var showPhotoPicker = false
-    @State private var refreshID: UUID = UUID()
+    @State private var journal: Journal?
     var canSave: Bool { !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil }
+
     var body: some View {
         ZStack{
             LinearGradient(
                 colors: [
-                    Color(hex: "D7EEFF"),   // light sky blue
-                    Color(hex: "B7D8FF"),   // soft marine
-                    Color(hex: "97C1FF")    // gentle ocean blue
+                    Color(hex: "D7EEFF"),
+                    Color(hex: "B7D8FF"),
+                    Color(hex: "97C1FF")
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -43,16 +45,15 @@ struct JournalView: View {
                         .foregroundStyle(canSave ? .green : .secondary)
                         .opacity(canSave ? 1 : 0.5)
                         .glassEffect(.regular.interactive())
-                    
                         .contentTransition(.symbolEffect(.replace))
                         .onTapGesture {
                             withAnimation{
                                 if canSave{
-                                    journalVM.addJournalEntry(plantID: plant.id, notes: note, photo: selectedImage)
+                                    journalVM.addJournalEntry(plantID: plant.id, notes: note, photo: selectedImage, context: modelContext)
+                                    journal = journalVM.fetchJournal(context: modelContext, id: plant.id)
                                     isExpanded.toggle()
                                     selectedImage = nil
                                     note = ""
-                                    refreshID = UUID()
                                 }else{
                                     isExpanded.toggle()
                                 }
@@ -63,7 +64,6 @@ struct JournalView: View {
                             Image(systemName: selectedImage == nil ? "photo.badge.plus" : "photo.badge.checkmark")
                                 .foregroundStyle((selectedImage != nil) ? .green : .secondary)
                                 .onTapGesture{
-                                    
                                     showDialog.toggle()
                                 }
                                 .confirmationDialog("Add Photo", isPresented: $showDialog, titleVisibility: .hidden){
@@ -81,7 +81,6 @@ struct JournalView: View {
                                         selectedImage = nil
                                     }label:{
                                         Text("Discard photo")
-                                        
                                     }
                                 }
                             TextField("Add a note...", text: $note)
@@ -91,53 +90,57 @@ struct JournalView: View {
                     }
                 }
                 .padding()
-                ForEach(0..<journalVM.returnJournal(for: plant.id).entries.count){i in
-                    HStack{
-                        VStack(spacing: 4){
-                            Circle()
-                                .fill(Color(hex: "7ED957"))
-                                .frame(width: 18, height: 18)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color(hex: "4CAF50"), lineWidth: 2)
-                                        .frame(width: 24, height:24)
-                                )
 
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hex: "4CAF50"),
-                                            Color(hex: "7ED957")
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
+                if let journal {
+                    let sorted = journal.entries.sorted{ $0.date > $1.date}
+                    ForEach(sorted, id: \.self) { entry in
+                        HStack{
+                            VStack(spacing: 4){
+                                Circle()
+                                    .fill(Color(hex: "7ED957"))
+                                    .frame(width: 18, height: 18)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color(hex: "4CAF50"), lineWidth: 2)
+                                            .frame(width: 24, height:24)
                                     )
-                                )
-                                .frame(width: 3)
-                        }
-                        VStack(alignment: .leading){
-                            Text(journalVM.returnJournal(for: plant.id).entries[i].date, style: .date)
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                            
-                            if let note = journalVM.returnJournal(for: plant.id).entries[i].notes{
-                                Text(note)
-                                    .font(.system(size: 16, weight: .regular))
+
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "4CAF50"),
+                                                Color(hex: "7ED957")
+                                            ],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .frame(width: 3)
                             }
-                            if let photo = journalVM.returnJournal(for: plant.id).entries[i].photo{
-                                photo
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(maxHeight: 300)
-                                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                                    .padding()
-                                
+                            VStack(alignment: .leading){
+                                Text(entry.date, style: .date)
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+
+                                if let note = entry.notes {
+                                    Text(note)
+                                        .font(.system(size: 16, weight: .regular))
+                                }
+
+                                if let img = journalVM.convertDataToSwiftUIimage(data: entry.photoData) {
+                                    img
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(maxHeight: 300)
+                                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                                        .padding()
+                                }
                             }
                         }
+                        .frame(maxWidth:.infinity, alignment: .leading)
+                        .padding(.horizontal)
                     }
-                    .frame(maxWidth:.infinity, alignment: .leading)
-                    .padding(.horizontal)
                 }
             }
         }
@@ -155,9 +158,9 @@ struct JournalView: View {
             CameraView(image: $selectedImage)
                 .presentationDetents([.large])
         }
-        .id(refreshID)
+        .onAppear {
+            journal = journalVM.fetchJournal(context: modelContext, id: plant.id)
+        }
     }
 }
-
-
 

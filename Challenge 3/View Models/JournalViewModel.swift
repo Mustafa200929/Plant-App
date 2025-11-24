@@ -7,38 +7,46 @@
 import Foundation
 import Combine
 import SwiftUI
+import SwiftData
+
 
 class JournalViewModel: ObservableObject {
     @Published var journals: [Journal] = []
     
-    func addJournalEntry(plantID: UUID, notes: String?, photo: UIImage?) {
-        ensureJournal(for: plantID)
-
-        guard let jIndex = journals.firstIndex(where: { $0.plantID == plantID }) else { return }
-
+    func addJournalEntry(plantID: UUID, notes: String?, photo: UIImage?, context: ModelContext) {
+        let journal = fetchJournal(context: context, id: plantID)
         let entry = JournalEntry(date: Date(),
                                  notes: notes,
-                                 photo: photo.map { Image(uiImage: $0) })
-
-        journals[jIndex].entries.insert(entry, at: 0)  // NEWEST FIRST
+                                 photoData: convertUIImageToData(photo: photo))
+        journal.entries.insert(entry, at: 0)
     }
     
-    func ensureJournal(for plantID: UUID) {
-        if journals.contains(where: { $0.plantID == plantID }) {
-            return
-        }
-        let new = Journal(plantID: plantID, entries: [])
-        journals.append(new)
-    }
-    
-    func returnJournal(for plantID: UUID) -> Journal {
-        ensureJournal(for: plantID)
-        if let journal = journals.first(where: { $0.plantID == plantID }) {
+    func fetchJournal(context: ModelContext, id: UUID)-> Journal {
+        let descriptor = FetchDescriptor<Journal>(predicate: #Predicate{$0.plantID == id})
+        if let journal = try? context.fetch(descriptor).first{
             return journal
         }
-        let new = Journal(plantID: plantID, entries: [])
-        journals.append(new)
+        let new = Journal(plantID: id, entries: [])
+        context.insert(new)
         return new
+    }
+    
+    func convertUIImageToData(photo: UIImage?)->Data?{
+        return photo?.jpegData(compressionQuality: 1)
+    }
+    
+    func convertDataToSwiftUIimage(data: Data?)->Image?{
+        if let data = data {
+           if let uiImage = UIImage(data: data) {
+                return Image(uiImage: uiImage)
+           }else{return nil}
+        }else{return nil}
+    }
+    
+    func deleteJournal(for plantID: UUID) {
+        if let idx = journals.firstIndex(where: { $0.plantID == plantID }) {
+            journals.remove(at: idx)
+        }
     }
 
     

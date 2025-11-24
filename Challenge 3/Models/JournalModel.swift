@@ -6,16 +6,32 @@
 //
 import Foundation
 import SwiftUI
+import SwiftData
 
-struct Journal: Identifiable{
+@Model
+class Journal: Identifiable{
     var id = UUID()
     var plantID: UUID
     var entries: [JournalEntry]
+    init(id: UUID = UUID(), plantID: UUID, entries: [JournalEntry]) {
+        self.id = id
+        self.plantID = plantID
+        self.entries = entries
+    }
+    
 }
 
-struct JournalEntry: Identifiable{
+@Model
+class JournalEntry: Identifiable{
     var id = UUID()
     var date: Date
     var notes: String?
-    var photo: Image?
+    var photoData: Data?
+    init(id: UUID = UUID(), date: Date, notes: String?, photoData: Data?) {
+        self.id = id
+        self.date = date
+        self.notes = notes
+        self.photoData = photoData
+    }
 }
+

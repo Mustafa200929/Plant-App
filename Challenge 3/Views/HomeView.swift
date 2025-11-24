@@ -12,6 +12,7 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) var modelContext
     @Query var plants: [Plant]
+    @Query var journals: [Journal]
 
     var body: some View {
         NavigationStack {

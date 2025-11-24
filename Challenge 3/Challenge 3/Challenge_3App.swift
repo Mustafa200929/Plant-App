@@ -25,7 +25,7 @@ struct Challenge_3App: App {
                     .environmentObject(journalVM)
             }
         }
-        .modelContainer(for: Plant.self)
+        .modelContainer(for: [Plant.self, Journal.self, JournalEntry.self])
     }
 }
 
