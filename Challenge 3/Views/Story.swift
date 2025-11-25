@@ -12,15 +12,14 @@
 //  Created by Han on 19/11/2025.
 //
 
-import SwiftUI
 
+import SwiftUI
 
 struct TypewriterText: View {
     let fullText: String
     var speed: Double = 0.02
-    
     @State private var shownText: String = ""
-    
+
     var body: some View {
         Text(shownText)
             .onAppear {
@@ -43,7 +42,7 @@ func speechBox<Content: View>(@ViewBuilder content: () -> Content) -> some View 
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.title2)
             .fontWeight(.bold)
-            .foregroundColor(.primary)
+            .foregroundColor(.white)
             .padding()
     }
     .frame(width: 300, height: 200)
@@ -54,95 +53,127 @@ func speechBox<Content: View>(@ViewBuilder content: () -> Content) -> some View 
 
 
 struct StoryFlow: View {
-    @State private var navigateHome = false
+    @State private var pageIndex: Int = 0
     @AppStorage("hasFinishedStory") var hasFinishedStory = false
+    @State private var navigateHome = false
 
-    var body: some View {
-        NavigationStack {
-            Story(navigateHome: $navigateHome)
-                .navigationDestination(isPresented: $navigateHome) {
-                    HomeView()
-                }
-        }
-    }
-}
-
-struct Story: View {
-    @Binding var navigateHome: Bool
-    
     var body: some View {
         ZStack {
-            Image("ST1")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            VStack {
-                Spacer()
-                
-                NavigationLink(destination: STIIView(navigateHome: $navigateHome)) {
-                    speechBox {
-                        TypewriterText(fullText:
-"""
-Welcome to Gardens! You are an adventurer, travelling amongst the seas...
-"""
-                        )
-                    }
+            if navigateHome {
+                        HomeView()
+            } else {
+                switch pageIndex {
+                case 0:
+                    StoryPage(
+                        background: "ST1",
+                        text: "Welcome to Gardens! You are an adventurer, travelling amongst the seas...",
+                        showNavigation: true,
+                        onNext: { pageIndex = 1 }
+                    )
+                    
+                case 1:
+                    StoryPage(
+                        background: "STII",
+                        text: "A... SHARK, it's heading to you! You look around to see what you can do...",
+                        showNavigation: true,
+                        onBack: { pageIndex = 0 },
+                        onNext: { pageIndex = 2 }
+                    )
+                    
+                case 2:
+                    StoryFinalPage(navigateHome: $navigateHome, onBack: { pageIndex = 1 })
+                default:
+                    EmptyView()
                 }
-                .buttonStyle(.plain)
-                .padding(.bottom, 40)
             }
         }
     }
 }
 
 
-struct STIIView: View {
-    @Binding var navigateHome: Bool
-    
+struct StoryPage: View {
+    var background: String
+    var text: String
+    var showNavigation: Bool = true
+    var onBack: (() -> Void)? = nil
+    var onNext: (() -> Void)? = nil
+
     var body: some View {
         ZStack {
-            Image("STII")
+            Image(background)
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
-            
+
             VStack {
                 Spacer()
-                
-                NavigationLink(destination: STIIIView(navigateHome: $navigateHome)) {
-                    speechBox {
-                        TypewriterText(fullText:
-"""
-A... SHARK, it's heading to you! You look around to see what you can do...
-"""
-                        )
-                    }
+
+                speechBox {
+                    TypewriterText(fullText: text)
                 }
-                .buttonStyle(.plain)
                 .padding(.bottom, 40)
+
+                if showNavigation {
+                    HStack(spacing: 30) {
+                        if let onBack = onBack {
+                            Button(action: onBack) {
+                                navButton(label: "Back", systemImage: "chevron.left")
+                            }
+                        }
+                        if let onNext = onNext {
+                            Button(action: onNext) {
+                                navButton(label: "Next", systemImage: "chevron.right")
+                            }
+                        }
+                    }
+                    .padding(.bottom, 50)
+                }
             }
         }
     }
-}
+
+    
+    func navButton(label: String, systemImage: String) -> some View {
+        HStack {
+            Image(systemName: systemImage)
+            Text(label)
+                .fontWeight(.semibold)
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 14)
+        .foregroundColor(.white)
+        .background(
+            RoundedRectangle(cornerRadius: 40)
+                .fill(Color.white.opacity(0.12))
+                .shadow(color: Color.white.opacity(0.6), radius: 12)
+                .shadow(color: Color.blue.opacity(0.4), radius: 18)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 40)
+                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+        )
+    }
+
+    }
 
 
-struct STIIIView: View {
+struct StoryFinalPage: View {
     @Binding var navigateHome: Bool
     @State private var fadeToBlack = false
     @AppStorage("hasFinishedStory") var hasFinishedStory = false
     
+    var onBack: () -> Void = {}
+
     var body: some View {
         ZStack {
             Image("STIII")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
-                .navigationBarBackButtonHidden(true)
-            
+
             VStack {
                 Spacer()
-                
+
                 speechBox {
                     TypewriterText(fullText:
 """
@@ -150,23 +181,67 @@ You jump to the side just in time — the shark glides past with a splash... an 
 """
                     )
                 }
-                .padding(.bottom, 40)
-            }
+
+                
+                Button(action: startPlanting) {
+                    HStack {
+                        Image(systemName: "leaf.fill")
+                        Text("Start Planting")
+                            .fontWeight(.bold)
+                    }
+                    .padding(.horizontal, 36)
+                    .padding(.vertical, 16)
+                    .foregroundColor(.white)
+                    .background(
+                        RoundedRectangle(cornerRadius: 40)
+                            .fill(Color.white.opacity(0.12))
+                            .shadow(color: Color.green.opacity(0.6), radius: 12)
+                            .shadow(color: Color.green.opacity(0.4), radius: 18)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 40)
+                            .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                    )
+                }
+                .padding(.top, 10)
+
             
+                Button(action: onBack) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                            .fontWeight(.semibold)
+                    }
+                    .padding(.horizontal, 26)
+                    .padding(.vertical, 14)
+                    .foregroundColor(.white)
+                    .background(
+                        RoundedRectangle(cornerRadius: 40)
+                            .fill(Color.white.opacity(0.10))
+                            .shadow(color: Color.white.opacity(0.3), radius: 10)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 40)
+                            .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                    )
+                }
+                .padding(.bottom, 60)
+            }
+
+          
             Color.black
                 .ignoresSafeArea()
                 .opacity(fadeToBlack ? 1 : 0)
                 .animation(.easeInOut(duration: 2), value: fadeToBlack)
         }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                fadeToBlack = true
-                    
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    hasFinishedStory = true
-                    navigateHome = true
-                }
-            }
+    }
+
+    func startPlanting() {
+        fadeToBlack = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            hasFinishedStory = true
+            navigateHome = true
         }
     }
 }

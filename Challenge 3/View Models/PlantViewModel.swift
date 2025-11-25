@@ -14,7 +14,7 @@ import CoreGraphics
 
 class PlantViewModel: ObservableObject {
     @Published var tipsForSpecies: [String : [String]] = [:]
-    @Published var islandSize: CGSize = CGSize(width: 340, height: 400)
+    @Published var islandSize: CGSize = CGSize(width: 340, height: 480)
     private let tipGenerator = TipGenerator()
     
     func addPlant(plantName: String, plantType: String, plantIconName: String, context: ModelContext, plants: [Plant]){
@@ -27,7 +27,7 @@ class PlantViewModel: ObservableObject {
             plantIsGerminated: false
         )
         if islandSize != .zero {
-            let islandSize = CGSize(width: 340, height: 400)
+            
             let baseSize: CGFloat = 90
             let count = plants.count
             let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
@@ -37,6 +37,7 @@ class PlantViewModel: ObservableObject {
             newPlant.positionY = p.y
         }
         context.insert(newPlant)
+        try? context.save()
     }
     
     func removePlant(plant: Plant, context: ModelContext) {
@@ -72,31 +73,39 @@ class PlantViewModel: ObservableObject {
         let key = plantInfo.name.lowercased()
         return tipsForSpecies[key] ?? []
     }
-
-    func assignRandomPosition(in size: CGSize, plants: [Plant], itemSize: CGFloat) -> CGPoint {
-        let radius = islandSize.width / 2
-        let innerRadius = radius - itemSize/2
-        let center = CGPoint(x: radius, y: radius)
-        let minimumGap: CGFloat = itemSize * 0.45
-        let maxAttempts = 200
+    func assignRandomPosition(in size: CGSize, plants: [Plant], itemSize: CGFloat, textHeight: CGFloat = 20) -> CGPoint {
+        let maxAttempts = 1000
+        let padding: CGFloat = 10
+        let rx = (size.width / 2) - padding - itemSize / 2
+        let ry = (size.height / 2) - padding - itemSize / 2 - textHeight / 2
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        
         for _ in 0..<maxAttempts {
-            let angle = CGFloat.random(in: 0...(2 * .pi))
-            let dist = CGFloat.random(in: 0...innerRadius)
-
-            let candidate = CGPoint(
-                x: center.x + cos(angle) * dist,
-                y: center.y + sin(angle) * dist
-            )
-            let overlapping = plants.contains { existing in
-                let dx = existing.position.x - candidate.x
-                let dy = existing.position.y - candidate.y
-                return sqrt(dx*dx + dy*dy) < (itemSize + minimumGap)
+            let angle = CGFloat.random(in: 0..<(2 * .pi))
+            let r = sqrt(CGFloat.random(in: 0...1))
+            let x = center.x + r * rx * cos(angle)
+            let y = center.y + r * ry * sin(angle)
+            
+            let candidateRect = CGRect(x: x - itemSize/2, y: y - itemSize/2, width: itemSize, height: itemSize + textHeight)
+            
+            let overlapping = plants.contains { other in
+                let otherRect = CGRect(
+                    x: other.positionX - itemSize/2,
+                    y: other.positionY - itemSize/2,
+                    width: itemSize,
+                    height: itemSize + textHeight
+                )
+                return candidateRect.intersects(otherRect)
             }
+            
             if !overlapping {
-                return candidate
+                return CGPoint(x: x, y: y)
             }
         }
+        
         return center
     }
+
+
 
 }

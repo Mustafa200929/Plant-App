@@ -253,7 +253,7 @@ struct PlantSheet: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             if !isCompatibleDevice() {
-                                Text("Your device does not support Apple Intelligence.Tips cannot be generated.")
+                                Text("Tips cannot be generated as your device does not support Apple Intelligence")
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(.red)
                                     .padding()

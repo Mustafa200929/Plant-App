@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var index: Int = 0
     @State private var selectedDetent: PresentationDetent = .fraction(0.1)
     @State private var boxOpacity: Double = 1
+    @State private var islandTopOffset: CGFloat = 30
     @State private var showAddPlantSheet = false
     @EnvironmentObject var plantVM: PlantViewModel
     @Environment(\.colorScheme) var colorScheme
@@ -51,6 +52,19 @@ struct HomeView: View {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                         boxOpacity = 0
                     }
+                    let size = CGSize(width: 340, height: 520)
+                    let baseSize: CGFloat = 90
+                    let count = plants.count
+                    let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
+                    let itemSize = baseSize * scale
+                    let minX = itemSize/2
+                    let maxX = size.width - itemSize/2
+                    let minY = itemSize/2
+                    let maxY = size.height - itemSize/2
+                    for plant in plants {
+                        plant.positionX = max(minX, min(maxX, plant.positionX))
+                        plant.positionY = max(minY, min(maxY, plant.positionY))
+                    }
                 }
     
                 HStack {
@@ -68,6 +82,20 @@ struct HomeView: View {
                 .sheet(isPresented: $showAddPlantSheet) {
                     addingplantView()
                         .presentationDetents([.large])
+                        .onDisappear {
+                            if showAddPlantSheet == false {
+                                let baseSize: CGFloat = 90
+                                let count = plants.count
+                                let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
+                                let itemSize = baseSize * scale
+                                let size = CGSize(width: 340, height: 520)
+                                for plant in plants where (plant.positionX <= 0 || plant.positionY <= 0) {
+                                    let p = randomPosition(in: size, itemSize: itemSize)
+                                    plant.positionX = p.x
+                                    plant.positionY = p.y
+                                }
+                            }
+                        }
                 }
 
                 VStack {
@@ -84,9 +112,10 @@ struct HomeView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 180)
                         .fill(Color(hex: "F2E0C2"))
-                        .frame(width: 380, height: 440)
+                        .frame(width: 380, height: 560)
+                        .offset(y: 20)
                     
-                    RoundedRectangle(cornerRadius: 180)
+                    RoundedRectangle(cornerRadius: 200)
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
@@ -97,46 +126,57 @@ struct HomeView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: 340, height: 400)
+                        .frame(width: 340, height: 520)
+                        .offset(y: 20)
                         .shadow(color: Color.primary.opacity(0.2), radius: 10)
                     
                     GeometryReader { geo in
-                        let islandSize = CGSize(width: 340, height: 400)
+                        let islandSize = CGSize(width: 340, height: 520)
+                        let islandOrigin = CGPoint(x: 0, y: islandTopOffset)
                         let baseSize: CGFloat = 90
                         let count = plants.count
                         let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
                         let itemSize = baseSize * scale
+                        
+                        let minX = itemSize/2
+                        let maxX = islandSize.width - itemSize/2
+                        let minY = itemSize/2
+                        let maxY = islandSize.height - itemSize/2
 
                         ZStack {
                             ForEach(plants) { plant in
-                                let pos = plant.position 
+                                let clampedX = max(minX, min(maxX, plant.positionX))
+                                let clampedY = max(minY, min(maxY, plant.positionY))
+                                let pos = CGPoint(x: clampedX, y: clampedY)
                                 VStack(spacing: 6) {
                                     Image(plant.plantIconName)
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: itemSize, height: itemSize)
-                                        .clipShape(Circle())
-                                        .glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.primary.opacity(0.35)))
+                                        .clipShape(Circle()).glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.white.opacity(0.08)))
                                         .shadow(radius: 4)
                                         .onTapGesture {
                                             selectedPlant = plant
                                             index = plants.firstIndex(where: { $0.id == plant.id }) ?? 0
                                             showSheet = true
                                         }
-
                                     Text(plant.plantName)
                                         .font(.caption)
                                         .foregroundColor(.primary.opacity(0.8))
                                 }
-                                .position(pos)
+                                .position(x: pos.x, y: pos.y)
+
+
                             }
                         }
                         .frame(width: islandSize.width, height: islandSize.height)
+                        .offset(y: 0)
                     }
-                    .frame(width: 340, height: 400)
-
+                    .frame(width: 340, height: 520)
+                    .offset(y: 20)
                     
                 }
+                .offset(y: islandTopOffset)
                 
                 
             }
@@ -165,7 +205,16 @@ struct HomeView: View {
                     }
                 }
             }
+            
         }
+    }
+    
+    private func randomPosition(in size: CGSize, itemSize: CGFloat) -> CGPoint {
+        let minX = itemSize/2
+        let maxX = size.width - itemSize/2
+        let minY = itemSize/2
+        let maxY = size.height - itemSize/2
+        return CGPoint(x: CGFloat.random(in: minX...maxX), y: CGFloat.random(in: minY...maxY))
     }
 }
 

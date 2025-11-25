@@ -34,22 +34,22 @@ class TipGenerator: ObservableObject {
 
 
 
-        // This returns LanguageModelSession.Response<String>
+        
         let result = try await session.respond(to: prompt)
 
-        // Extract actual text
+        
         let text: String = result.content
         print("RAW OUTPUT:\n\(text)")
 
-        // Split into separate lines
+        
         let rawLines = text.components(separatedBy: CharacterSet.newlines)
 
-        // Trim + remove empty rows
+        
         let lines = rawLines
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
-        // Remove numbering like "1. " or "2) "
+   
         let cleaned = lines.map { line in
             line.replacingOccurrences(
                 of: #"^\d+[\.\)]\s*"#,
