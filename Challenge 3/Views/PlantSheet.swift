@@ -158,7 +158,7 @@ struct PlantSheet: View {
                     .animation(smooth, value: plant.plantIsGerminated)
 
                     if selectedDetent == .fraction(0.7) || selectedDetent == .large {
-
+                        
                         if plant.plantIsGerminated {
                             HStack(spacing: 12) {
                                 Image(systemName: "leaf.fill")
@@ -172,7 +172,7 @@ struct PlantSheet: View {
                                     .overlay(
                                         Circle().stroke(.green.opacity(0.25), lineWidth: 1)
                                     )
-
+                                
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Germinated!")
                                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -181,9 +181,9 @@ struct PlantSheet: View {
                                         .font(.system(size: 14, weight: .medium))
                                         .foregroundStyle(.secondary)
                                 }
-
+                                
                                 Spacer()
-
+                                
                                 Image(systemName: "checkmark.seal.fill")
                                     .symbolRenderingMode(.palette)
                                     .foregroundStyle(.primary, .green)
@@ -198,7 +198,7 @@ struct PlantSheet: View {
                             )
                             .padding(.horizontal)
                         } else {
-
+                            
                             Group {
                                 VStack{
                                     if let info = plantVM.findPlantData(plantType: plant.plantType) {
@@ -207,7 +207,7 @@ struct PlantSheet: View {
                                             .padding(.horizontal)
                                             .padding(.top)
                                             .fontWeight(.medium)
-
+                                        
                                         Text("Look out for sprouts")
                                             .padding(.bottom)
                                     } else {
@@ -219,7 +219,7 @@ struct PlantSheet: View {
                                 .background(.primary.opacity(0.12))
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .padding(.horizontal)
-
+                                
                                 SwipeToConfirm(
                                     title: "Germinated",
                                     backgroundTint: Color(hex: "#5AAE63"),
@@ -231,13 +231,13 @@ struct PlantSheet: View {
                                 )
                                 .padding(.horizontal)
                             }
-
+                            
                             Text("Tips")
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .padding(.top)
                                 .padding(.leading)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-
+                            
                             NavigationLink {
                                 TipsView(plant: plant)
                             } label: {
@@ -252,25 +252,33 @@ struct PlantSheet: View {
                                 .foregroundStyle(Color(.secondaryLabel))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
-
-                            if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                                let tips = plantVM.tips(for: info)
-                                if tips.isEmpty {
-                                    Text("Generating tips…")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundStyle(.secondary)
-                                        .padding(.horizontal)
-                                } else {
-                                    VStack {
-                                        ForEach(0..<min(tips.count, 2), id: \.self) { i in
-                                            TipPreview(i: i, info: info, tips: tips)
+                            if !isCompatibleDevice() {
+                                Text("Your device does not support Apple Intelligence.Tips cannot be generated.")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.red)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal)
+                            } else {
+                                
+                                if let info = plantVM.findPlantData(plantType: plant.plantType) {
+                                    let tips = plantVM.tips(for: info)
+                                    if tips.isEmpty {
+                                        Text("Generating tips…")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundStyle(.secondary)
+                                            .padding(.horizontal)
+                                    } else {
+                                        VStack {
+                                            ForEach(0..<min(tips.count, 2), id: \.self) { i in
+                                                TipPreview(i: i, info: info, tips: tips)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
                     if selectedDetent == .large || (selectedDetent == .fraction(0.7) && plant.plantIsGerminated){
 
                         VStack {

@@ -74,22 +74,30 @@ struct TipsView: View {
                         }
                         if let info = plantVM.findPlantData(plantType: plant.plantType) {
                             let tips = plantVM.tips(for: info)
-                            
-                            if tips.isEmpty {
-                                Text("Generating tips…")
+                            if !isCompatibleDevice() {
+                                Text("Your device does not support Apple Intelligence.Tips cannot be generated.")
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundColor(.red)
+                                    .padding()
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal)
                             } else {
-                                VStack {
-                                    ForEach(0..<tips.count, id: \.self) { i in
-                                        TipView(i: i, info: info, tips: tips)
+                                
+                                if tips.isEmpty {
+                                    Text("Generating tips…")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal)
+                                } else {
+                                    VStack {
+                                        ForEach(0..<tips.count, id: \.self) { i in
+                                            TipView(i: i, info: info, tips: tips)
+                                        }
                                     }
                                 }
                             }
                         }
-                          
                     }
                 }
             }

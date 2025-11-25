@@ -174,5 +174,6 @@ struct HomeView: View {
     HomeView()
         .environmentObject(PlantViewModel())
         .environmentObject(JournalViewModel())
+        .modelContainer(for: Plant.self)
 }
 
