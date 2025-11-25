@@ -11,6 +11,7 @@ struct JournalView: View {
     @EnvironmentObject var journalVM: JournalViewModel
     @EnvironmentObject var plantVM: PlantViewModel
     @Environment(\.modelContext) var modelContext
+    @Environment(\.colorScheme) var colourScheme
     @Bindable var plant: Plant
     @State private var isExpanded = false
     @State private var note = ""
@@ -24,16 +25,29 @@ struct JournalView: View {
 
     var body: some View {
         ZStack{
-            LinearGradient(
-                colors: [
-                    Color(hex: "D7EEFF"),
-                    Color(hex: "B7D8FF"),
-                    Color(hex: "97C1FF")
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+              if colourScheme == .dark {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "0D1B2A"),
+                        Color(hex: "1B263B"),
+                        Color(hex: "415A77")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }else{
+                LinearGradient(
+                    colors: [
+                        Color(hex: "D7EEFF"),
+                        Color(hex: "B7D8FF"),
+                        Color(hex: "97C1FF")
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }
+
             ScrollView{
                 Text("Journal")
                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -44,7 +58,11 @@ struct JournalView: View {
                         .padding()
                         .foregroundStyle(canSave ? .green : .secondary)
                         .opacity(canSave ? 1 : 0.5)
-                        .glassEffect(.regular.interactive())
+                        .glassEffect(.regular
+                            .tint(colourScheme == .dark
+                                  ? Color.white.opacity(0.12)
+                                  : Color.black.opacity(0.10))
+                            .interactive())
                         .contentTransition(.symbolEffect(.replace))
                         .onTapGesture {
                             withAnimation{
@@ -86,7 +104,11 @@ struct JournalView: View {
                             TextField("Add a note...", text: $note)
                         }
                         .padding()
-                        .glassEffect(.regular.interactive())
+                        .glassEffect(.regular
+                            .tint(colourScheme == .dark
+                                  ? Color.white.opacity(0.12)
+                                  : Color.black.opacity(0.10))
+                            .interactive())
                     }
                 }
                 .padding()

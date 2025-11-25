@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TipsView: View {
     @EnvironmentObject var plantVM: PlantViewModel
+    @Environment(\.colorScheme) var colourScheme
     @Bindable var plant: Plant
     @State private var loading = false
     @State private var errorMessage: String? = nil
@@ -28,16 +29,29 @@ struct TipsView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color(hex: "D7EEFF"),
-                    Color(hex: "B7D8FF"),
-                    Color(hex: "97C1FF")
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            if colourScheme == .dark {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "0D1B2A"),
+                        Color(hex: "1B263B"),
+                        Color(hex: "415A77")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }else{
+                LinearGradient(
+                    colors: [
+                        Color(hex: "D7EEFF"),
+                        Color(hex: "B7D8FF"),
+                        Color(hex: "97C1FF")
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }
+
 
             VStack(alignment: .leading, spacing: 0) {
 

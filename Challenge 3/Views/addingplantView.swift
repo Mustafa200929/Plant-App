@@ -29,8 +29,10 @@ struct addingplantView: View {
     @State private var showNameError = false
     @EnvironmentObject var plantVM: PlantViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) var colourScheme
     @Environment(\.modelContext) var modelContext
     @Query var plants: [Plant]
+    
     
     let species = [
         "Select Seed",
@@ -46,15 +48,28 @@ struct addingplantView: View {
     
     var body: some View {
         ZStack{
-            LinearGradient(
-                colors: [
-                    Color(hex: "D7EEFF"),
-                    Color(hex: "B7D8FF"),
-                    Color(hex: "97C1FF")
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            if colourScheme == .dark {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "0D1B2A"),
+                        Color(hex: "1B263B"),
+                        Color(hex: "415A77")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }else{
+                LinearGradient(
+                    colors: [
+                        Color(hex: "D7EEFF"),
+                        Color(hex: "B7D8FF"),
+                        Color(hex: "97C1FF")
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }
         GeometryReader { proxy in
             let width = proxy.size.width
             let itemWidth: CGFloat = 140
@@ -177,21 +192,21 @@ struct addingplantView: View {
                             Text("Add Plant")
                                 .font(.headline)
                         }
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 26)
                         .padding(.vertical, 14)
                         .background(
                             LinearGradient(
                                 colors: [
-                                    Color.green.opacity(0.9),
-                                    Color.cyan.opacity(0.9)
+                                    Color(hex: "3A7DFF"),
+                                    Color(hex: "2F66E9")
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                        .shadow(color: .green.opacity(0.3), radius: 14, y: 8)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: Color(hex: "3A7DFF").opacity(0.25), radius: 12, y: 6)
                     }
                     .disabled(isButtonDisabled)
                     .opacity(isButtonDisabled ? 0.4 : 1)

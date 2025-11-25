@@ -116,7 +116,7 @@ struct HomeView: View {
                                         .scaledToFit()
                                         .frame(width: itemSize, height: itemSize)
                                         .clipShape(Circle())
-                                        .glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.gray.opacity(0.35)))
+                                        .glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.primary.opacity(0.35)))
                                         .shadow(radius: 4)
                                         .onTapGesture {
                                             selectedPlant = plant

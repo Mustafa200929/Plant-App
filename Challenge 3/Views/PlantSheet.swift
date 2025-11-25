@@ -21,6 +21,7 @@ struct PlantSheet: View {
     @State private var showPhotoPicker = false
     @State private var showDeleteDialog = false
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) var colourScheme
     @Namespace private var plantNamespace
     @Environment(\.modelContext) var modelContext
     @State private var journal: Journal?
@@ -101,17 +102,32 @@ struct PlantSheet: View {
 
     var body: some View {
         ZStack{
-            LinearGradient(
-                colors: [
-                    Color(hex: "D7EEFF"),
-                    Color(hex: "B7D8FF"),
-                    Color(hex: "97C1FF")
-                ],
-                startPoint: .top, endPoint: .bottom
-            )
-            .opacity(selectedDetent == .large ? 1 : 0)
-            .animation(smooth, value: selectedDetent)
-            .ignoresSafeArea()
+            if colourScheme == .dark {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "0D1B2A"),
+                        Color(hex: "1B263B"),
+                        Color(hex: "415A77")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                .opacity(selectedDetent == .large ? 1 : 0)
+                .animation(smooth, value: selectedDetent)
+            }else{
+                LinearGradient(
+                    colors: [
+                        Color(hex: "D7EEFF"),
+                        Color(hex: "B7D8FF"),
+                        Color(hex: "97C1FF")
+                    ],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                .opacity(selectedDetent == .large ? 1 : 0)
+                .animation(smooth, value: selectedDetent)
+            }
 
             ScrollView {
                 VStack{
@@ -206,7 +222,7 @@ struct PlantSheet: View {
 
                                 SwipeToConfirm(
                                     title: "Germinated",
-                                    backgroundTint: Color(hex: "DFFFE9"),
+                                    backgroundTint: Color(hex: "#5AAE63"),
                                     onConfirm: {
                                         withAnimation(smooth) {
                                             plantVM.plantIsGerminated(plant: plant)
@@ -287,7 +303,11 @@ struct PlantSheet: View {
                                     .padding()
                                     .foregroundStyle(canSave ? .green : .secondary)
                                     .opacity(canSave ? 1 : 0.5)
-                                    .glassEffect(.regular.interactive())
+                                    .glassEffect(.regular
+                                        .tint(colourScheme == .dark
+                                              ? Color.white.opacity(0.12)
+                                              : Color.black.opacity(0.10))
+                                        .interactive())
                                     .contentTransition(.symbolEffect(.replace))
                                     .onTapGesture {
                                         withAnimation(smooth) {
@@ -326,7 +346,11 @@ struct PlantSheet: View {
                                         TextField("Add a note...", text: $note)
                                     }
                                     .padding()
-                                    .glassEffect(.regular.interactive())
+                                    .glassEffect(.regular
+                                        .tint(colourScheme == .dark
+                                              ? Color.white.opacity(0.12)
+                                              : Color.black.opacity(0.10))
+                                        .interactive())
                                     .transition(.opacity.combined(with: .move(edge: .trailing)))
                                 }
                             }
@@ -433,7 +457,7 @@ private func iconForTip(_ tip: String) -> String {
                 plantName: "Basil",
                 plantType: "Herb",
                 plantIconName: "basil", plantDateCreated: Date(),
-                plantDateGerminated: Date(), plantIsGerminated: true
+                plantDateGerminated: Date(), plantIsGerminated: false
             )
             return p
         }()
