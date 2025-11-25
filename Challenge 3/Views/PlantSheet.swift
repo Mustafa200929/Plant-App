@@ -43,7 +43,7 @@ struct PlantSheet: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.black.opacity(0.12))
+        .background(.primary.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.horizontal)
     }
@@ -170,7 +170,7 @@ struct PlantSheet: View {
 
                                 Image(systemName: "checkmark.seal.fill")
                                     .symbolRenderingMode(.palette)
-                                    .foregroundStyle(.white, .green)
+                                    .foregroundStyle(.primary, .green)
                                     .padding(8)
                                     .background(RoundedRectangle(cornerRadius: 12).fill(Color.green.opacity(0.2)))
                             }
@@ -178,7 +178,7 @@ struct PlantSheet: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 24)
                                     .fill(Color.green.opacity(0.12))
-                                    .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+                                    .shadow(color: .primary.opacity(0.08), radius: 8, y: 4)
                             )
                             .padding(.horizontal)
                         } else {
@@ -200,7 +200,7 @@ struct PlantSheet: View {
                                     }
                                 }
                                 .frame(maxWidth:.infinity)
-                                .background(.black.opacity(0.12))
+                                .background(.primary.opacity(0.12))
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .padding(.horizontal)
 
@@ -330,7 +330,7 @@ struct PlantSheet: View {
                                     .transition(.opacity.combined(with: .move(edge: .trailing)))
                                 }
                             }
-                            .padding()
+                            .padding(.horizontal)
                             .animation(smooth, value: isExpanded)
 
                             if let journal {
@@ -347,33 +347,21 @@ struct PlantSheet: View {
                                     }
                                 }
                             }
-
                             Button(role: .destructive) {
                                 showDeleteDialog = true
                             } label: {
-                                HStack {
-                                    Image(systemName: "trash.fill")
-                                        .font(.system(size: 20, weight: .bold))
-                                    Text("Delete Plant")
-                                        .font(.system(size: 20, weight: .semibold))
-                                }
-                                .foregroundStyle(.red)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .fill(Color.red.opacity(0.15))
-                                        .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
-                                )
-                                .padding(.horizontal)
-                                .padding(.bottom, 30)
+                                Label("Delete Plant", systemImage: "trash.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.red)
+                                    .padding()
                             }
-                            .confirmationDialog("Delete Plant", isPresented: $showDeleteDialog, titleVisibility: .visible) {
+                            .confirmationDialog("Are you sure?", isPresented: $showDeleteDialog, titleVisibility: .visible) {
                                 Button("Delete Plant", role: .destructive) {
                                     withAnimation {
                                         plantVM.removePlant(plant: plant, context: modelContext)
                                         journalVM.deleteJournal(for: plant.id)
                                         selectedDetent = .fraction(0.1)
+                                        dismiss()
                                     }
                                 }
                                 Button("Cancel", role: .cancel) {}
@@ -435,3 +423,30 @@ private func iconForTip(_ tip: String) -> String {
     return "sparkles"
 }
 
+#Preview {
+    struct PlantSheetPreviewHost: View {
+        @State private var detent: PresentationDetent = .large
+        @State private var samplePlant: Plant = {
+            // Construct a sample Plant with placeholder values
+            var p = Plant(
+                id: UUID(),
+                plantName: "Basil",
+                plantType: "Herb",
+                plantIconName: "basil", plantDateCreated: Date(),
+                plantDateGerminated: Date(), plantIsGerminated: true
+            )
+            return p
+        }()
+
+        var body: some View {
+            PlantSheet(
+                selectedDetent: $detent,
+                plant: samplePlant
+            )
+            .environmentObject(PlantViewModel())
+            .environmentObject(JournalViewModel())
+        }
+    }
+
+    return PlantSheetPreviewHost()
+}

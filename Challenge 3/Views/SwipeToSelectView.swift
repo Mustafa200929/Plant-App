@@ -23,7 +23,7 @@ struct SwipeToConfirm: View {
             let maxOffset = max(0, width - handleSize - 8)
             ZStack {
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(.black.opacity(0.12))
+                    .fill(.primary.opacity(0.12))
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .fill(backgroundTint)
@@ -47,7 +47,7 @@ struct SwipeToConfirm: View {
                                 .foregroundStyle(.primary)
                         )
                         .frame(width: handleSize, height: handleSize)
-                        .shadow(color: .black.opacity(0.15), radius: 6, y: 3)
+                        .shadow(color: .primary.opacity(0.15), radius: 6, y: 3)
                         .offset(x: dragOffset)
                         .gesture(
                             DragGesture(minimumDistance: 0)

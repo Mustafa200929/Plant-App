@@ -20,7 +20,7 @@ struct TipsView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.black.opacity(0.12))
+        .background(.primary.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .padding(.horizontal)
     }

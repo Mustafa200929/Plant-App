@@ -39,8 +39,8 @@ struct HomeView: View {
                         .offset(x:-35, y:-310)
                     
                     Text("You check your supplies, you realise you only have one seed inside. To continue, please get a seed from your preferred plant vendor")
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
+                        .foregroundColor(.primary)
                         .frame(width:250, height:130)
                         .offset(x:-50, y:-310)
                     
@@ -66,16 +66,13 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .sheet(isPresented: $showAddPlantSheet) {
-                    Text("Add a New Plant")
-                                .font(.title)
-                                .bold()
-                                .padding()
                     addingplantView()
+                        .presentationDetents([.large])
                 }
 
                 VStack {
                     Circle()
-                        .fill(Color.white)
+                        .fill(.primary)
                         .frame(width: 350, height: 350)
                         .blur(radius: 60)
                         .opacity(0.22)
@@ -101,7 +98,7 @@ struct HomeView: View {
                             )
                         )
                         .frame(width: 340, height: 400)
-                        .shadow(color: Color.black.opacity(0.2), radius: 10)
+                        .shadow(color: Color.primary.opacity(0.2), radius: 10)
                     
                     GeometryReader { geo in
                         let islandSize = CGSize(width: 340, height: 400)
@@ -129,7 +126,7 @@ struct HomeView: View {
 
                                     Text(plant.plantName)
                                         .font(.caption)
-                                        .foregroundColor(.black.opacity(0.8))
+                                        .foregroundColor(.primary.opacity(0.8))
                                 }
                                 .position(pos)
                             }
@@ -178,3 +175,4 @@ struct HomeView: View {
         .environmentObject(PlantViewModel())
         .environmentObject(JournalViewModel())
 }
+

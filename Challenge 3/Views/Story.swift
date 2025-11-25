@@ -43,7 +43,7 @@ func speechBox<Content: View>(@ViewBuilder content: () -> Content) -> some View 
             .frame(maxWidth: .infinity, alignment: .leading)
             .font(.title2)
             .fontWeight(.bold)
-            .foregroundColor(.white)
+            .foregroundColor(.primary)
             .padding()
     }
     .frame(width: 300, height: 200)
