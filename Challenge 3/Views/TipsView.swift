@@ -154,7 +154,8 @@ struct TipsView: View {
             plantIconName: "sun",
             plantDateCreated: Date(),
             plantDateGerminated: Date(),
-            plantIsGerminated: false
+            plantIsGerminated: false,
+            plantShouldHaveGerminated: false
         )
     
     TipsView(plant: plant)

@@ -136,13 +136,21 @@ struct PlantSheet: View {
 
             ScrollView {
                 VStack{
-
+         
                     HStack {
+                        let shouldHaveGerminated: Bool = {
+                            guard let info = plantVM.findPlantData(plantType: plant.plantType) else { return false }
+                            return plantVM.plantAge(plant: plant) >= info.germinationMaxDays
+                        }()
+
+                        let tint: Color = plant.plantIsGerminated
+                            ? Color.green.opacity(0.35)
+                        : (shouldHaveGerminated ? Color.yellow.opacity(0.35) : Color.white.opacity(0.08))
                         Image(plant.plantIconName)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 54, height: 54)
-                            .glassEffect(.clear.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.gray.opacity(0.35)))
+                            .glassEffect(.clear.tint(tint))
 
                         VStack(alignment: .leading) {
                             Text(plant.plantName)
@@ -482,7 +490,7 @@ private func iconForTip(_ tip: String) -> String {
                 plantName: "Basil",
                 plantType: "Herb",
                 plantIconName: "basil", plantDateCreated: Date(),
-                plantDateGerminated: Date(), plantIsGerminated: false
+                plantDateGerminated: Date(), plantIsGerminated: false, plantShouldHaveGerminated: false
             )
             return p
         }()

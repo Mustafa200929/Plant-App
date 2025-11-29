@@ -24,7 +24,8 @@ class PlantViewModel: ObservableObject {
             plantIconName: plantIconName,
             plantDateCreated: Date(),
             plantDateGerminated: Date(),
-            plantIsGerminated: false
+            plantIsGerminated: false,
+            plantShouldHaveGerminated: false
         )
         if islandSize != .zero {
             

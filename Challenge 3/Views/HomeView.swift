@@ -145,6 +145,14 @@ struct HomeView: View {
 
                         ZStack {
                             ForEach(plants) { plant in
+                                let shouldHaveGerminated: Bool = {
+                                    guard let info = plantVM.findPlantData(plantType: plant.plantType) else { return false }
+                                    return plantVM.plantAge(plant: plant) >= info.germinationMaxDays
+                                }()
+
+                                let tint: Color = plant.plantIsGerminated
+                                    ? Color.green.opacity(0.35)
+                                : (shouldHaveGerminated ? Color.yellow.opacity(0.35) : Color.white.opacity(0.08))
                                 let clampedX = max(minX, min(maxX, plant.positionX))
                                 let clampedY = max(minY, min(maxY, plant.positionY))
                                 let pos = CGPoint(x: clampedX, y: clampedY)
@@ -153,7 +161,7 @@ struct HomeView: View {
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: itemSize, height: itemSize)
-                                        .clipShape(Circle()).glassEffect(.regular.tint(plant.plantIsGerminated ? Color.green.opacity(0.35) : Color.white.opacity(0.08)))
+                                        .clipShape(Circle()).glassEffect(.regular.tint(tint))
                                         .shadow(radius: 4)
                                         .onTapGesture {
                                             selectedPlant = plant

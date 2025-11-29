@@ -17,13 +17,14 @@ class Plant: Identifiable {
     var plantDateCreated: Date
     var plantDateGerminated: Date
     var plantIsGerminated: Bool
+    var plantShouldHaveGerminated: Bool
     var positionX: Double
     var positionY: Double
     var position: CGPoint{
         CGPoint(x: positionX, y: positionY)
     }
     
-    init(id: UUID = UUID(), plantName: String, plantType: String, plantIconName: String, plantDateCreated: Date, plantDateGerminated: Date, plantIsGerminated: Bool, positionX: Double = .zero, positionY: Double = .zero) {
+    init(id: UUID = UUID(), plantName: String, plantType: String, plantIconName: String, plantDateCreated: Date, plantDateGerminated: Date, plantIsGerminated: Bool, positionX: Double = .zero, positionY: Double = .zero, plantShouldHaveGerminated: Bool) {
         self.id = id
         self.plantName = plantName
         self.plantType = plantType
@@ -33,6 +34,7 @@ class Plant: Identifiable {
         self.plantIsGerminated = plantIsGerminated
         self.positionX = positionX
         self.positionY = positionY
+        self.plantShouldHaveGerminated = plantShouldHaveGerminated
     }
 }
 
