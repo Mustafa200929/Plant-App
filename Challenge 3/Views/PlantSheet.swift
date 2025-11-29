@@ -26,9 +26,14 @@ struct PlantSheet: View {
     @Environment(\.modelContext) var modelContext
     @State private var journal: Journal?
     private let smooth = Animation.spring(response: 0.35, dampingFraction: 0.85, blendDuration: 0.2)
-
     var canSave: Bool {
         !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
+    }
+    var remaining: Int {
+        if let info = plantVM.findPlantData(plantType: plant.plantType) {
+                    return info.germinationMaxDays - plantVM.plantAge(plant: plant)
+                }
+        return 0
     }
 
     func TipPreview(i: Int, info: PlantInfo, tips: [String]) -> some View {
@@ -149,7 +154,7 @@ struct PlantSheet: View {
                         Spacer()
 
                         let age = plantVM.plantAge(plant: plant)
-                        Text(age == 0 ? "Just born!" :
+                        Text(age == 0 ? "Just planted!" :
                                 age == 1 ? "1 day old" :
                                 "\(age) days old")
                         .fontWeight(.semibold)
@@ -201,22 +206,35 @@ struct PlantSheet: View {
                             
                             Group {
                                 VStack{
-                                    if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                                        let remaining = info.germinationMaxDays - plantVM.plantAge(plant: plant)
-                                        Text("Should germinate in \(max(remaining, 0)) days")
-                                            .padding(.horizontal)
-                                            .padding(.top)
-                                            .fontWeight(.medium)
-                                        
-                                        Text("Look out for sprouts")
-                                            .padding(.bottom)
-                                    } else {
-                                        Text("Germination info unavailable")
+                                        if remaining > 0 {
+                                            Text("Should germinate in \(remaining) days!")
+                                                .padding(.horizontal)
+                                                .padding(.top)
+                                                .fontWeight(.medium)
+                                            Text("Look out for sprouts")
+                                                .padding(.bottom)
+                                        } else if remaining == 0 {
+                                            Text("Should germinate by today!")
+                                                .padding(.horizontal)
+                                                .padding(.top)
+                                                .fontWeight(.medium)
+                                            Text("Look out for sprouts")
+                                                .padding(.bottom)
+                                        } else {
+                                            HStack{
+                                                Image(systemName: "exclamationmark.triangle.fill")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
+                                                Text("Seed should have germinated!")
+                                                    .padding()
+                                                    .fontWeight(.medium)
+                                            }
                                             .padding()
-                                    }
+                                        }
+                                    
                                 }
                                 .frame(maxWidth:.infinity)
-                                .background(.primary.opacity(0.12))
+                                .background(remaining < 0 ? Color.yellow.opacity(0.5) : Color.primary.opacity(0.12))
                                 .clipShape(RoundedRectangle(cornerRadius: 24))
                                 .padding(.horizontal)
                                 
@@ -459,7 +477,6 @@ private func iconForTip(_ tip: String) -> String {
     struct PlantSheetPreviewHost: View {
         @State private var detent: PresentationDetent = .large
         @State private var samplePlant: Plant = {
-            // Construct a sample Plant with placeholder values
             var p = Plant(
                 id: UUID(),
                 plantName: "Basil",
@@ -482,3 +499,4 @@ private func iconForTip(_ tip: String) -> String {
 
     return PlantSheetPreviewHost()
 }
+
