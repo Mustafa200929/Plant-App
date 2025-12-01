@@ -278,21 +278,27 @@ struct PlantSheet: View {
                                 .foregroundStyle(Color(.secondaryLabel))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            if !isCompatibleDevice() {
-                                Text("Tips cannot be generated as your device does not support Apple Intelligence")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.red)
-                                    .padding()
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal)
-                            } else {
-                                
-                                if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                                    let tips = plantVM.tips(for: info)
+                            if let info = plantVM.findPlantData(plantType: plant.plantType) {
+
+                                let aiTips = plantVM.tips(for: info)
+                                let tips = aiTips.isEmpty ? NonAITipGenerator.tips(for: info) : aiTips
+
+                                if !isCompatibleDevice() {
+
+                                   
+                                    VStack {
+                                        ForEach(0..<min(tips.count, 2), id: \.self) { i in
+                                            TipPreview(i: i, info: info, tips: tips)
+                                        }
+                                    }
+
+                                } else {
+
                                     if tips.isEmpty {
                                         Text("Generating tips…")
                                             .font(.system(size: 16, weight: .medium))
                                             .foregroundStyle(.secondary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
                                             .padding(.horizontal)
                                     } else {
                                         VStack {
@@ -303,6 +309,7 @@ struct PlantSheet: View {
                                     }
                                 }
                             }
+
                         }
                     }
                     if selectedDetent == .large || (selectedDetent == .fraction(0.7) && plant.plantIsGerminated){

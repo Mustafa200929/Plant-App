@@ -80,7 +80,12 @@ struct addingplantView: View {
                 Text("Add Plant")
                     .font(.title.bold())
                     .padding()
-                
+                Text("Select Icon")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal)
+                    .padding(.top, 4)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 18) {
                         Spacer().frame(width: sideInset)
@@ -267,4 +272,3 @@ struct addingplantView: View {
     }
     .modelContainer(container)
 }
-

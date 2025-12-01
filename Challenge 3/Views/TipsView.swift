@@ -73,16 +73,19 @@ struct TipsView: View {
                                 .padding()
                         }
                         if let info = plantVM.findPlantData(plantType: plant.plantType) {
-                            let tips = plantVM.tips(for: info)
+                            let aiTips = plantVM.tips(for: info)
+                            let tips = aiTips.isEmpty ? NonAITipGenerator.tips(for: info) : aiTips
                             if !isCompatibleDevice() {
-                                Text("Your device does not support Apple Intelligence.Tips cannot be generated.")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.red)
-                                    .padding()
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal)
+
+                                VStack {
+                                    ForEach(0..<tips.count, id: \.self) { i in
+                                        TipView(i: i, info: info, tips: tips)
+                                    }
+                                }
+
                             } else {
-                                
+
+                               
                                 if tips.isEmpty {
                                     Text("Generating tips…")
                                         .font(.system(size: 16, weight: .medium))
