@@ -14,6 +14,7 @@ struct HomeView: View {
     @Environment(\.modelContext) var modelContext
     @Query var plants: [Plant]
     @Query var journals: [Journal]
+    @AppStorage("isShown") var notShown: Bool = true
 
     var body: some View {
         NavigationStack {
@@ -28,42 +29,43 @@ struct HomeView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-                
                 .navigationBarBackButtonHidden(true)
                 
-                
-                ZStack {
-                    Rectangle()
-                        .fill(Color.clear)
-                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20))
-                        .frame(width:300, height:130)
-                        .offset(x:-35, y:-310)
-                    
-                    Text("You check your supplies, you realise you only have one seed inside. To continue, please get a seed from your preferred plant vendor")
-                        .foregroundColor(.primary)
-                        .foregroundColor(.primary)
-                        .frame(width:250, height:130)
-                        .offset(x:-50, y:-310)
-                    
-                }
-                .opacity(boxOpacity)
-                .animation(.easeOut(duration: 1), value: boxOpacity)
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                        boxOpacity = 0
+                if notShown{
+                    ZStack {
+                        Rectangle()
+                            .fill(Color.clear)
+                            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20))
+                            .frame(width:300, height:130)
+                            .offset(x:-35, y:-310)
+                        
+                        Text("You check your supplies, you realise you only have one seed inside. To continue, please get a seed from your preferred plant vendor")
+                            .foregroundColor(.primary)
+                            .foregroundColor(.primary)
+                            .frame(width:250, height:130)
+                            .offset(x:-50, y:-310)
+                        
                     }
-                    let size = CGSize(width: 340, height: 520)
-                    let baseSize: CGFloat = 90
-                    let count = plants.count
-                    let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
-                    let itemSize = baseSize * scale
-                    let minX = itemSize/2
-                    let maxX = size.width - itemSize/2
-                    let minY = itemSize/2
-                    let maxY = size.height - itemSize/2
-                    for plant in plants {
-                        plant.positionX = max(minX, min(maxX, plant.positionX))
-                        plant.positionY = max(minY, min(maxY, plant.positionY))
+                    .opacity(boxOpacity)
+                    .animation(.easeOut(duration: 1), value: boxOpacity)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                            notShown = false
+                            boxOpacity = 0
+                        }
+                        let size = CGSize(width: 340, height: 520)
+                        let baseSize: CGFloat = 90
+                        let count = plants.count
+                        let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
+                        let itemSize = baseSize * scale
+                        let minX = itemSize/2
+                        let maxX = size.width - itemSize/2
+                        let minY = itemSize/2
+                        let maxY = size.height - itemSize/2
+                        for plant in plants {
+                            plant.positionX = max(minX, min(maxX, plant.positionX))
+                            plant.positionY = max(minY, min(maxY, plant.positionY))
+                        }
                     }
                 }
     
