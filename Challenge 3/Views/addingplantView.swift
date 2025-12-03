@@ -47,180 +47,156 @@ struct addingplantView: View {
     ]
     
     var body: some View {
-        ZStack{
-            if colourScheme == .dark {
-                LinearGradient(
-                    colors: [
-                        Color(hex: "0D1B2A"),
-                        Color(hex: "1B263B"),
-                        Color(hex: "415A77")
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            }else{
-                LinearGradient(
-                    colors: [
-                        Color(hex: "D7EEFF"),
-                        Color(hex: "B7D8FF"),
-                        Color(hex: "97C1FF")
-                    ],
-                    startPoint: .top, endPoint: .bottom
-                )
-                .ignoresSafeArea()
-            }
-        GeometryReader { proxy in
-            let width = proxy.size.width
-            let itemWidth: CGFloat = 140
-            let itemHeight: CGFloat = 180
-            let idealInset = (width - itemWidth) / 2
-            let sideInset = idealInset * 0.8
-            VStack(alignment: .leading,spacing: 0) {
-                Text("Add Plant")
-                    .font(.title.bold())
-                    .padding()
-                Text("Select Icon")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.horizontal)
-                    .padding(.top, 4)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 18) {
-                        Spacer().frame(width: sideInset)
-                        
-                        ForEach(PlantIcons, id: \.self) { icon in
-                            let isSelected = (selectedIcon == icon)
+        NavigationStack{
+            ZStack{
+                if colourScheme == .dark {
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "0D1B2A"),
+                            Color(hex: "1B263B"),
+                            Color(hex: "415A77")
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                }else{
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "D7EEFF"),
+                            Color(hex: "B7D8FF"),
+                            Color(hex: "97C1FF")
+                        ],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+                }
+                GeometryReader { proxy in
+                    let width = proxy.size.width
+                    let itemWidth: CGFloat = 140
+                    let itemHeight: CGFloat = 180
+                    let idealInset = (width - itemWidth) / 2
+                    let sideInset = idealInset * 0.8
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading,spacing: 0) {
                             
-                            VStack {
-                                Image(icon)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 80, height: 80)
-                                    .padding(18)
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 20)
-                                            .stroke(
-                                                isSelected ? Color.accentColor : Color.secondary.opacity(0.2),
-                                                lineWidth: isSelected ? 3 : 1
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 18) {
+                                    Spacer().frame(width: sideInset)
+                                    
+                                    ForEach(PlantIcons, id: \.self) { icon in
+                                        let isSelected = (selectedIcon == icon)
+                                        
+                                        VStack {
+                                            Image(icon)
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 80, height: 80)
+                                                .padding(18)
+                                                .background(.ultraThinMaterial)
+                                                .clipShape(RoundedRectangle(cornerRadius: 20))
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 20)
+                                                        .stroke(
+                                                            isSelected ? Color.accentColor : Color.secondary.opacity(0.2),
+                                                            lineWidth: isSelected ? 3 : 1
+                                                        )
+                                                )
+                                        }
+                                        .scaleEffect(isSelected ? 1.08 : 1.0)
+                                        .shadow(
+                                            color: isSelected ? Color.accentColor.opacity(0.25) : .clear,
+                                            radius: isSelected ? 14 : 0,
+                                            y: isSelected ? 8 : 0
+                                        )
+                                        .frame(width: itemWidth, height: itemHeight)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
+                                                selectedIcon = icon
+                                            }
+                                        }
+                                        .background(
+                                            GeometryReader { itemProxy in
+                                                Color.clear.preference(
+                                                    key: ItemCenterPreferenceKey.self,
+                                                    value: [icon: itemProxy.frame(in: .global).midX]
+                                                )
+                                            }
+                                        )
+                                    }
+                                    
+                                    Spacer().frame(width: sideInset)
+                                }
+                                .padding(.vertical, 28)
+                                .onPreferenceChange(ItemCenterPreferenceKey.self) { centers in
+                                    let centerX = width / 2
+                                    if let nearest = centers.min(by: { abs($0.value - centerX) < abs($1.value - centerX) })?.key {
+                                        if selectedIcon != nearest {
+                                            withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
+                                                selectedIcon = nearest
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 18) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    TextField("Nickname", text: $nickname)
+                                        .textInputAutocapitalization(.words)
+                                        .padding()
+                                        .glassEffect(
+                                            .regular.interactive().tint(
+                                                .green.opacity(nickname == "" ? 0.0 : 0.12)
                                             )
+                                        )
+                                        .animation(.easeInOut(duration: 0.25), value: nickname)
+                                    
+                                    if showNameError {
+                                        Text("Nickname is required.")
+                                            .foregroundStyle(.red)
+                                            .font(.caption)
+                                            .padding(.leading, 4)
+                                    }
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Picker("Plant", selection: $selectedSpecies) {
+                                        ForEach(species, id: \.self) { item in
+                                            Text(item)
+                                        }
+                                    }
+                                    .padding()
+                                    .pickerStyle(.menu)
+                                    .glassEffect(
+                                        .regular.interactive().tint(
+                                            .green.opacity(selectedSpecies == "Select Seed" ? 0.0 : 0.12)
+                                        )
                                     )
-                            }
-                            .scaleEffect(isSelected ? 1.08 : 1.0)
-                            .shadow(
-                                color: isSelected ? Color.accentColor.opacity(0.25) : .clear,
-                                radius: isSelected ? 14 : 0,
-                                y: isSelected ? 8 : 0
-                            )
-                            .frame(width: itemWidth, height: itemHeight)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
-                                    selectedIcon = icon
+                                    .animation(.easeInOut(duration: 0.25), value: selectedSpecies)
                                 }
                             }
-                            .background(
-                                GeometryReader { itemProxy in
-                                    Color.clear.preference(
-                                        key: ItemCenterPreferenceKey.self,
-                                        value: [icon: itemProxy.frame(in: .global).midX]
-                                    )
-                                }
-                            )
-                        }
-                        
-                        Spacer().frame(width: sideInset)
-                    }
-                    .padding(.vertical, 28)
-                    .onPreferenceChange(ItemCenterPreferenceKey.self) { centers in
-                        let centerX = width / 2
-                        if let nearest = centers.min(by: { abs($0.value - centerX) < abs($1.value - centerX) })?.key {
-                            if selectedIcon != nearest {
-                                withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
-                                    selectedIcon = nearest
-                                }
-                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 8)
+                            
+                            Spacer()
+                            
+                            
                         }
                     }
                 }
-                
-                VStack(alignment: .leading, spacing: 18) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        TextField("Nickname", text: $nickname)
-                            .textInputAutocapitalization(.words)
-                            .padding()
-                            .glassEffect(
-                                .regular.interactive().tint(
-                                    .green.opacity(nickname == "" ? 0.0 : 0.12)
-                                )
-                            )
-                            .animation(.easeInOut(duration: 0.25), value: nickname)
-                        
-                        if showNameError {
-                            Text("Nickname is required.")
-                                .foregroundStyle(.red)
-                                .font(.caption)
-                                .padding(.leading, 4)
-                        }
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-                        Picker("Plant", selection: $selectedSpecies) {
-                            ForEach(species, id: \.self) { item in
-                                Text(item)
-                            }
-                        }
-                        .padding()
-                        .pickerStyle(.menu)
-                        .glassEffect(
-                            .regular.interactive().tint(
-                                .green.opacity(selectedSpecies == "Select Seed" ? 0.0 : 0.12)
-                            )
-                        )
-                        .animation(.easeInOut(duration: 0.25), value: selectedSpecies)
+            } .navigationTitle("New Plant")
+                .toolbar{
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("New Plant", systemImage: "checkmark"){
+                            addPlant()
+                        } .disabled(isButtonDisabled)
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 8)
-                
-                Spacer()
-                
-                HStack{
-                    Spacer()
-                    Button(action: addPlant) {
-                        HStack(spacing: 10) {
-                            Image(systemName: "leaf.fill")
-                                .font(.system(size: 18, weight: .semibold))
-                            Text("Add Plant")
-                                .font(.headline)
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 26)
-                        .padding(.vertical, 14)
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: "3A7DFF"),
-                                    Color(hex: "2F66E9")
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: Color(hex: "3A7DFF").opacity(0.25), radius: 12, y: 6)
-                    }
-                    .disabled(isButtonDisabled)
-                    .opacity(isButtonDisabled ? 0.4 : 1)
-                    .padding(.bottom, 24)
-                    Spacer()
-                }
-            }
-            }
         }
+       
     }
     
     

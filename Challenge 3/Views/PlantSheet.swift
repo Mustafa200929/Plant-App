@@ -25,6 +25,8 @@ struct PlantSheet: View {
     @Namespace private var plantNamespace
     @Environment(\.modelContext) var modelContext
     @State private var journal: Journal?
+    @State private var deleteButtonAnchor: CGRect = .zero
+
     private let smooth = Animation.spring(response: 0.35, dampingFraction: 0.85, blendDuration: 0.2)
     var canSave: Bool {
         !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || selectedImage != nil
@@ -315,13 +317,47 @@ struct PlantSheet: View {
                     if selectedDetent == .large || (selectedDetent == .fraction(0.7) && plant.plantIsGerminated){
 
                         VStack {
-
-                            Text("Journal")
-                                .font(.system(size: 24, weight: .bold, design: .rounded))
-                                .padding(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top)
-
+                            
+                            HStack{
+                                Text("Journal")
+                                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                                    
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    
+                                Spacer()
+                                if !isExpanded{
+                                    Image(systemName: isExpanded ? "checkmark" : "plus")
+                                        .padding()
+                                        .foregroundStyle(canSave ? .green : .primary)
+                                        
+                                        .glassEffect(.regular
+                                            .tint(colourScheme == .dark
+                                                  ? Color.white.opacity(0.12)
+                                                  : Color.black.opacity(0.10))
+                                            .interactive())
+                                        .contentTransition(.symbolEffect(.replace))
+                                        .onTapGesture {
+                                            withAnimation(smooth) {
+                                                if canSave {
+                                                    journalVM.addJournalEntry(
+                                                        plantID: plant.id,
+                                                        notes: note,
+                                                        photo: selectedImage,
+                                                        context: modelContext
+                                                    )
+                                                    journal = journalVM.fetchJournal(context: modelContext, id: plant.id)
+                                                    isExpanded.toggle()
+                                                    selectedImage = nil
+                                                    note = ""
+                                                } else {
+                                                    isExpanded.toggle()
+                                                }
+                                            }
+                                        }.matchedGeometryEffect(id: "new journal button", in: plantNamespace)
+                                }
+                            }.padding(.top)
+                                .padding(.horizontal)
+                            
                             HStack {
                                 NavigationLink {
                                     JournalView(plant: plant)
@@ -340,6 +376,7 @@ struct PlantSheet: View {
                             }
 
                             HStack {
+                                if isExpanded {
                                 Image(systemName: isExpanded ? "checkmark" : "plus")
                                     .padding()
                                     .foregroundStyle(canSave ? .green : .secondary)
@@ -367,9 +404,9 @@ struct PlantSheet: View {
                                                 isExpanded.toggle()
                                             }
                                         }
-                                    }
+                                    }.matchedGeometryEffect(id: "new journal button", in: plantNamespace)
 
-                                if isExpanded {
+                               
                                     Group {
                                         Image(systemName: selectedImage == nil ? "photo.badge.plus" : "photo.badge.checkmark")
                                             .foregroundStyle((selectedImage != nil) ? .green : .secondary)
@@ -403,34 +440,15 @@ struct PlantSheet: View {
                                 let preview = Array(sorted.prefix(2))
 
                                 if preview.isEmpty {
-                                    Text("No journal entries yet.")
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .padding()
+                                 ContentUnavailableView("No journal entries yet",systemImage: "list.bullet")
+                                        
                                 } else {
                                     ForEach(preview, id: \.id) { entry in
                                         JournalPreview(entry: entry)
                                     }
                                 }
                             }
-                            Button(role: .destructive) {
-                                showDeleteDialog = true
-                            } label: {
-                                Label("Delete Plant", systemImage: "trash.fill")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(.red)
-                                    .padding()
-                            }
-                            .confirmationDialog("Are you sure?", isPresented: $showDeleteDialog, titleVisibility: .visible) {
-                                Button("Delete Plant", role: .destructive) {
-                                    withAnimation {
-                                        plantVM.removePlant(plant: plant, context: modelContext)
-                                        journalVM.deleteJournal(for: plant.id)
-                                        selectedDetent = .fraction(0.1)
-                                        dismiss()
-                                    }
-                                }
-                                Button("Cancel", role: .cancel) {}
-                            }
+                   
                         }
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .animation(smooth, value: selectedDetent)
@@ -461,6 +479,30 @@ struct PlantSheet: View {
         .task {
             if let info = plantVM.findPlantData(plantType: plant.plantType) {
                 await plantVM.loadTips(for: info)
+            }
+        }.toolbar {
+            if selectedDetent == .large{
+                ToolbarItem(placement: .bottomBar) {
+                    Button(role: .destructive) {
+                        showDeleteDialog = true
+                    } label: {
+                        Label("Delete Plant", systemImage: "trash.fill")
+                    }
+                    
+                    
+                    
+                    .confirmationDialog("Are you sure?", isPresented: $showDeleteDialog, titleVisibility: .visible) {
+                        Button("Delete Plant", role: .destructive) {
+                            withAnimation {
+                                plantVM.removePlant(plant: plant, context: modelContext)
+                                journalVM.deleteJournal(for: plant.id)
+                                selectedDetent = .fraction(0.1)
+                                dismiss()
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    }
+                }
             }
         }
     }

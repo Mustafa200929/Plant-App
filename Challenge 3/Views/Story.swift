@@ -19,7 +19,7 @@ struct TypewriterText: View {
     let fullText: String
     var speed: Double = 0.02
     @State private var shownText: String = ""
-
+    
     var body: some View {
         Text(shownText)
         
@@ -46,21 +46,22 @@ func speechBox<Content: View>(@ViewBuilder content: () -> Content) -> some View 
             .foregroundColor(.white)
             .padding()
     }
-    .frame(width: 300, height: 200, alignment: .topLeading)
+    .frame( height: 200, alignment: .topLeading)
     .background(Color.black.opacity(0.4))
     .cornerRadius(20)
     .shadow(radius: 10)
+    .padding()
 }
 
 struct StoryFlow: View {
     @State private var pageIndex: Int = 0
     @AppStorage("hasFinishedStory") var hasFinishedStory = false
     @State private var navigateHome = false
-
+    
     var body: some View {
         ZStack {
             if navigateHome {
-                        HomeView()
+                HomeView()
             } else {
                 switch pageIndex {
                 case 0:
@@ -97,22 +98,22 @@ struct StoryPage: View {
     var showNavigation: Bool = true
     var onBack: (() -> Void)? = nil
     var onNext: (() -> Void)? = nil
-
+    
     var body: some View {
         ZStack {
             Image(background)
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
-
+            
             VStack {
                 Spacer()
-
+                
                 speechBox {
                     TypewriterText(fullText: text)
                 }
-                .padding(.bottom, 40)
-
+                
+                
                 if showNavigation {
                     HStack(spacing: 30) {
                         if let onBack = onBack {
@@ -120,18 +121,30 @@ struct StoryPage: View {
                                 navButton(label: "Back", systemImage: "chevron.left")
                             }
                         }
+                        Spacer()
                         if let onNext = onNext {
                             Button(action: onNext) {
                                 navButton(label: "Next", systemImage: "chevron.right")
                             }
                         }
                     }
-                    .padding(.bottom, 50)
+                    
+                    .padding(.horizontal)
                 }
             }
         }
+        .background{
+            
+            Image(background)
+                .resizable()
+                .scaledToFill()
+                .scaleEffect(1.1)
+                .ignoresSafeArea()
+        }
+        .background(ignoresSafeAreaEdges: .all)
+        
     }
-
+    
     
     func navButton(label: String, systemImage: String) -> some View {
         HStack {
@@ -153,8 +166,8 @@ struct StoryPage: View {
                 .stroke(Color.white.opacity(0.35), lineWidth: 1)
         )
     }
-
-    }
+    
+}
 
 
 struct StoryFinalPage: View {
@@ -163,17 +176,13 @@ struct StoryFinalPage: View {
     @AppStorage("hasFinishedStory") var hasFinishedStory = false
     
     var onBack: () -> Void = {}
-
+    
     var body: some View {
         ZStack {
-            Image("STIII")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-
+            
             VStack {
                 Spacer()
-
+                
                 speechBox {
                     TypewriterText(fullText:
 """
@@ -181,10 +190,10 @@ You jump to the side just in time — the shark glides past with a splash... an 
 """
                     )
                 }
-                .padding(.bottom, 40)
+                
                 
                 HStack(spacing: 20) {
-
+                    
                     Button(action: onBack) {
                         HStack {
                             Image(systemName: "chevron.left")
@@ -204,12 +213,12 @@ You jump to the side just in time — the shark glides past with a splash... an 
                                 .stroke(Color.white.opacity(0.25), lineWidth: 1)
                         )
                     }
-
+                    Spacer()
                     Button(action: startPlanting) {
                         HStack {
                             Image(systemName: "leaf.fill")
                             Text("Start")
-                                
+                            
                         }
                         .padding(.horizontal, 36)
                         .padding(.vertical, 14)
@@ -226,20 +235,30 @@ You jump to the side just in time — the shark glides past with a splash... an 
                         )
                     }
                 }
-                .padding(.bottom, 60)
+                
+                .padding(.horizontal)
+                
             }
-
-          
+            
             Color.black
                 .ignoresSafeArea()
                 .opacity(fadeToBlack ? 1 : 0)
                 .animation(.easeInOut(duration: 2), value: fadeToBlack)
         }
+        
+        
+        .background{
+            Image("STIII")
+                .resizable()
+                .scaledToFill()
+                .scaleEffect(1.1)
+                .ignoresSafeArea()
+        }.background(ignoresSafeAreaEdges: .all)
     }
-
+    
     func startPlanting() {
         fadeToBlack = true
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             hasFinishedStory = true
             navigateHome = true
