@@ -22,6 +22,7 @@ struct TypewriterText: View {
 
     var body: some View {
         Text(shownText)
+        
             .onAppear {
                 shownText = ""
                 var charIndex = 0.0
@@ -39,18 +40,17 @@ struct TypewriterText: View {
 func speechBox<Content: View>(@ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 0) {
         content()
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .font(.title2)
             .fontWeight(.bold)
             .foregroundColor(.white)
             .padding()
     }
-    .frame(width: 300, height: 200)
+    .frame(width: 300, height: 200, alignment: .topLeading)
     .background(Color.black.opacity(0.4))
     .cornerRadius(20)
     .shadow(radius: 10)
 }
-
 
 struct StoryFlow: View {
     @State private var pageIndex: Int = 0
@@ -181,49 +181,50 @@ You jump to the side just in time — the shark glides past with a splash... an 
 """
                     )
                 }
-
+                .padding(.bottom, 40)
                 
-                Button(action: startPlanting) {
-                    HStack {
-                        Image(systemName: "leaf.fill")
-                        Text("Start Planting")
-                            .fontWeight(.bold)
-                    }
-                    .padding(.horizontal, 36)
-                    .padding(.vertical, 16)
-                    .foregroundColor(.white)
-                    .background(
-                        RoundedRectangle(cornerRadius: 40)
-                            .fill(Color.white.opacity(0.12))
-                            .shadow(color: Color.green.opacity(0.6), radius: 12)
-                            .shadow(color: Color.green.opacity(0.4), radius: 18)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 40)
-                            .stroke(Color.white.opacity(0.35), lineWidth: 1)
-                    )
-                }
-                .padding(.top, 10)
+                HStack(spacing: 20) {
 
-            
-                Button(action: onBack) {
-                    HStack {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                            .fontWeight(.semibold)
+                    Button(action: onBack) {
+                        HStack {
+                            Image(systemName: "chevron.left")
+                            Text("Back")
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.horizontal, 26)
+                        .padding(.vertical, 14)
+                        .foregroundColor(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 40)
+                                .fill(Color.white.opacity(0.10))
+                                .shadow(color: Color.white.opacity(0.3), radius: 10)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 40)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                        )
                     }
-                    .padding(.horizontal, 26)
-                    .padding(.vertical, 14)
-                    .foregroundColor(.white)
-                    .background(
-                        RoundedRectangle(cornerRadius: 40)
-                            .fill(Color.white.opacity(0.10))
-                            .shadow(color: Color.white.opacity(0.3), radius: 10)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 40)
-                            .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                    )
+
+                    Button(action: startPlanting) {
+                        HStack {
+                            Image(systemName: "leaf.fill")
+                            Text("Start")
+                                
+                        }
+                        .padding(.horizontal, 36)
+                        .padding(.vertical, 14)
+                        .foregroundColor(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 40)
+                                .fill(Color.white.opacity(0.12))
+                                .shadow(color: Color.white.opacity(0.6), radius: 12)
+                                .shadow(color: Color.white.opacity(0.4), radius: 18)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 40)
+                                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                        )
+                    }
                 }
                 .padding(.bottom, 60)
             }

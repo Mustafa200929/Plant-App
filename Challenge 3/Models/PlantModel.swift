@@ -19,7 +19,7 @@ class Plant: Identifiable {
     var plantIsGerminated: Bool
     var plantShouldHaveGerminated: Bool
     var positionX: Double
-    var positionY: Double
+    var positionY: Double 
     var position: CGPoint{
         CGPoint(x: positionX, y: positionY)
     }
