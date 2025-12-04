@@ -56,11 +56,12 @@ struct TipsView: View {
             VStack(alignment: .leading, spacing: 0) {
 
                 Text("Tips")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
 
                 Text("To help your seed germinate")
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
                     .padding(.horizontal)
                     .padding(.bottom)
                 ScrollView {

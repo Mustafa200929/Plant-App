@@ -317,15 +317,31 @@ struct PlantSheet: View {
                     if selectedDetent == .large || (selectedDetent == .fraction(0.7) && plant.plantIsGerminated){
 
                         VStack {
-                            
                             HStack{
-                                Text("Journal")
-                                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                                    
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                VStack(alignment: .leading){
+                                    Text("Journal")
+                                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                                        
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    HStack{
+                                        NavigationLink {
+                                            JournalView(plant: plant)
+                                        } label: {
+                                            HStack(spacing:0){
+                                                Text("See more")
+                                                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                                                    .padding(.bottom)
+                                                   
+                                                Image(systemName: "chevron.right")
+                                                    .padding(.bottom)
+                                            }
+                                            .foregroundStyle(Color(.secondaryLabel))
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        }
+                                    }
+                                }
                                     
                                 Spacer()
-                                if !isExpanded{
                                     Image(systemName: isExpanded ? "checkmark" : "plus")
                                         .padding()
                                         .foregroundStyle(canSave ? .green : .primary)
@@ -354,60 +370,11 @@ struct PlantSheet: View {
                                                 }
                                             }
                                         }.matchedGeometryEffect(id: "new journal button", in: plantNamespace)
-                                }
                             }.padding(.top)
-                                .padding(.horizontal)
-                            
-                            HStack {
-                                NavigationLink {
-                                    JournalView(plant: plant)
-                                } label: {
-                                    HStack(spacing:0){
-                                        Text("See more")
-                                            .font(.system(size: 16, weight: .regular, design: .rounded))
-                                            .padding(.bottom)
-                                            .padding(.leading)
-                                        Image(systemName: "chevron.right")
-                                            .padding(.bottom)
-                                    }
-                                    .foregroundStyle(Color(.secondaryLabel))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                            }
-
+                                .padding(.horizontal)//
                             HStack {
                                 if isExpanded {
-                                Image(systemName: isExpanded ? "checkmark" : "plus")
-                                    .padding()
-                                    .foregroundStyle(canSave ? .green : .secondary)
-                                    .opacity(canSave ? 1 : 0.5)
-                                    .glassEffect(.regular
-                                        .tint(colourScheme == .dark
-                                              ? Color.white.opacity(0.12)
-                                              : Color.black.opacity(0.10))
-                                        .interactive())
-                                    .contentTransition(.symbolEffect(.replace))
-                                    .onTapGesture {
-                                        withAnimation(smooth) {
-                                            if canSave {
-                                                journalVM.addJournalEntry(
-                                                    plantID: plant.id,
-                                                    notes: note,
-                                                    photo: selectedImage,
-                                                    context: modelContext
-                                                )
-                                                journal = journalVM.fetchJournal(context: modelContext, id: plant.id)
-                                                isExpanded.toggle()
-                                                selectedImage = nil
-                                                note = ""
-                                            } else {
-                                                isExpanded.toggle()
-                                            }
-                                        }
-                                    }.matchedGeometryEffect(id: "new journal button", in: plantNamespace)
-
-                               
-                                    Group {
+                                Group {
                                         Image(systemName: selectedImage == nil ? "photo.badge.plus" : "photo.badge.checkmark")
                                             .foregroundStyle((selectedImage != nil) ? .green : .secondary)
                                             .onTapGesture {
@@ -440,7 +407,8 @@ struct PlantSheet: View {
                                 let preview = Array(sorted.prefix(2))
 
                                 if preview.isEmpty {
-                                 ContentUnavailableView("No journal entries yet",systemImage: "list.bullet")
+                                 ContentUnavailableView("No entries yet",systemImage: "list.bullet")
+                                        .scaleEffect(0.65)
                                         
                                 } else {
                                     ForEach(preview, id: \.id) { entry in
