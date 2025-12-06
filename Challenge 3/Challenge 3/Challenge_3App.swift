@@ -10,7 +10,7 @@ import SwiftData
 
 @main
 struct Challenge_3App: App {
-    @AppStorage("hasFinishedStory") var hasFinishedStory = false
+    @AppStorage("hasFinishedStory") var hasFinishedStory = true
     @StateObject var plantVM = PlantViewModel()
     @StateObject var journalVM = JournalViewModel()
     var body: some Scene {

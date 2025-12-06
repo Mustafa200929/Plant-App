@@ -15,12 +15,10 @@ struct HomeView: View {
     @Query var plants: [Plant]
     @Query var journals: [Journal]
     @AppStorage("isShown") var notShown: Bool = true
-
+    
     var body: some View {
         NavigationStack {
-
             ZStack {
-
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color(hex: "2F66E9"),
@@ -31,105 +29,78 @@ struct HomeView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-
-                if notShown {
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.clear)
-                            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20))
-                            .frame(width:300, height:130)
-                            .offset(x:-35, y:-310)
-
-                        Text("You check your supplies, you realise you only have one seed inside. To continue, please get a seed from your preferred plant vendor")
+                GeometryReader {geo in
+                    let w = geo.size.width
+                    let h = geo.size.height
+                    VStack {
+                        Circle()
+                            .fill(.primary)
+                            .frame(width: w, height: h)
+                            .blur(radius: 60)
+                            .opacity(0.22)
+                            .offset(y: -h*0.8)
+                        Spacer()
+                    }
+                }
+                VStack{
+                    /*if notShown == false{
+                        Text("You check your supplies, you only have one seed to populate the island.")
+                            .padding()
+                            .glassEffect()
                             .foregroundColor(.primary)
-                            .frame(width:250, height:130)
-                            .offset(x:-50, y:-310)
-                    }
-                    .opacity(boxOpacity)
-                    .animation(.easeOut(duration: 1), value: boxOpacity)
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                            notShown = false
-                            boxOpacity = 0
-                        }
-                        let size = CGSize(width: 340, height: 520)
-                        let baseSize: CGFloat = 90
-                        let count = plants.count
-                        let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
-                        let itemSize = baseSize * scale
-                        let minX = itemSize/2
-                        let maxX = size.width - itemSize/2
-                        let minY = itemSize/2
-                        let maxY = size.height - itemSize/2
-                        for plant in plants {
-                            plant.positionX = max(minX, min(maxX, plant.positionX))
-                            plant.positionY = max(minY, min(maxY, plant.positionY))
-                        }
-                    }
-                }
-
-                VStack {
-                    Circle()
-                        .fill(.primary)
-                        .frame(width: 350, height: 350)
-                        .blur(radius: 60)
-                        .opacity(0.22)
-                        .offset(y: -260)
-                    Spacer()
-                }
-                .allowsHitTesting(false)
-
-                ZStack {
-
-                    RoundedRectangle(cornerRadius: 180)
-                        .fill(Color(hex: "F2E0C2"))
-                        .frame(width: 380, height: 560)
-                        .offset(y: 20)
-
-                    RoundedRectangle(cornerRadius: 200)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(hex: "E8C58C"),
-                                    Color(hex: "D7B179")
-                                ]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: 340, height: 520)
-                        .offset(y: 20)
-                        .shadow(color: Color.primary.opacity(0.2), radius: 10)
-
+                            .opacity(boxOpacity)
+                            .animation(.easeOut(duration: 1), value: boxOpacity)
+                            .onAppear {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                                    notShown = false
+                                    boxOpacity = 0
+                                }
+                            }
+                    }*/
+                    
                     GeometryReader { geo in
-                        let islandSize = CGSize(width: 340, height: 520)
-                        let islandOrigin = CGPoint(x: 0, y: islandTopOffset)
+                        let width = geo.size.width
+                        let height = geo.size.height
+                        let islandSize = CGSize(width: width*0.8, height: height*0.7)
                         let baseSize: CGFloat = 90
                         let count = plants.count
                         let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
                         let itemSize = baseSize * scale
-
                         let minX = itemSize/2
                         let maxX = islandSize.width - itemSize/2
                         let minY = itemSize/2
                         let maxY = islandSize.height - itemSize/2
-
-                        ZStack {
+                        ZStack (alignment: .center) {
+                            RoundedRectangle(cornerRadius: 180)
+                                .fill(Color(hex: "F2E0C2"))
+                                .frame(width: islandSize.width*1.1, height: islandSize.height*1.1)
+                            RoundedRectangle(cornerRadius: 200)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(hex: "E8C58C"),
+                                            Color(hex: "D7B179")
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: islandSize.width, height: islandSize.height)
+                                .shadow(color: Color.primary.opacity(0.2), radius: 10)
                             ForEach(plants) { plant in
-
                                 let shouldHaveGerminated: Bool = {
                                     guard let info = plantVM.findPlantData(plantType: plant.plantType) else { return false }
                                     return plantVM.plantAge(plant: plant) >= info.germinationMaxDays
                                 }()
-
+                                
                                 let tint: Color = plant.plantIsGerminated
-                                    ? Color.green.opacity(0.35)
+                                ? Color.green.opacity(0.35)
                                 : (shouldHaveGerminated ? Color.yellow.opacity(0.35) : Color.white.opacity(0.08))
-
+                                
                                 let clampedX = max(minX, min(maxX, plant.positionX))
                                 let clampedY = max(minY, min(maxY, plant.positionY))
                                 let pos = CGPoint(x: clampedX, y: clampedY)
-
+                                
                                 VStack(spacing: 6) {
                                     Image(plant.plantIconName)
                                         .resizable()
@@ -142,28 +113,33 @@ struct HomeView: View {
                                             index = plants.firstIndex(where: { $0.id == plant.id }) ?? 0
                                             showSheet = true
                                         }
-
+                                    
                                     Text(plant.plantName)
-                                        .font(.caption)
+                                        .frame(width: itemSize)
+                                        .font(.system(size: min(16, itemSize * 0.18), weight: .regular))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.6)
+                                        .multilineTextAlignment(.center)
                                         .foregroundColor(.primary.opacity(0.8))
                                 }
                                 .position(x: pos.x, y: pos.y)
                             }
                         }
+                        .onChange(of: islandSize){newSize in
+                            if newSize != .zero{
+                                plantVM.islandSize = newSize
+                            }
+                        }
                         .frame(width: islandSize.width, height: islandSize.height)
-                        .offset(y: 0)
+                        .frame(width: width, height: height)
                     }
-                    .frame(width: 340, height: 520)
-                    .offset(y: 20)
-
                 }
-                .offset(y: islandTopOffset)
             }
-
+            
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
-
-         
+            
+            
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -173,11 +149,11 @@ struct HomeView: View {
                     }
                 }
             }
-
-          
+            
+            
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarBackground(Color.clear, for: .navigationBar)
-
+            
             .sheet(isPresented: $showSheet) {
                 if plants.indices.contains(index) {
                     NavigationStack {
@@ -203,35 +179,13 @@ struct HomeView: View {
                     }
                 }
             }
-
+            .sheet(isPresented: $showAddPlantSheet) {
+                addingplantView()
+                    .presentationDetents([.large])
+            }
+            
         }
-        .sheet(isPresented: $showAddPlantSheet) {
-            addingplantView()
-                .presentationDetents([.large])
-                .onDisappear {
-                    if showAddPlantSheet == false {
-                        let baseSize: CGFloat = 90
-                        let count = plants.count
-                        let scale = max(0.5, min(1.0, 3.0 / CGFloat(max(count, 1))))
-                        let itemSize = baseSize * scale
-                        let size = CGSize(width: 340, height: 520)
-                        for plant in plants where (plant.positionX <= 0 || plant.positionY <= 0) {
-                            let p = randomPosition(in: size, itemSize: itemSize)
-                            plant.positionX = p.x
-                            plant.positionY = p.y
-                        }
-                    }
-                }
-        }
-
-    }
-
-    private func randomPosition(in size: CGSize, itemSize: CGFloat) -> CGPoint {
-        let minX = itemSize/2
-        let maxX = size.width - itemSize/2
-        let minY = itemSize/2
-        let maxY = size.height - itemSize/2
-        return CGPoint(x: CGFloat.random(in: minX...maxX), y: CGFloat.random(in: minY...maxY))
+        
     }
 }
 

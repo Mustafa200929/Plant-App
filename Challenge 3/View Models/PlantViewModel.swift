@@ -14,7 +14,7 @@ import CoreGraphics
 
 class PlantViewModel: ObservableObject {
     @Published var tipsForSpecies: [String : [String]] = [:]
-    @Published var islandSize: CGSize = CGSize(width: 340, height: 480)
+    @Published var islandSize: CGSize = CGSize(width: 1, height: 0)
     private let tipGenerator = TipGenerator()
     
     func addPlant(plantName: String, plantType: String, plantIconName: String, context: ModelContext, plants: [Plant]){
