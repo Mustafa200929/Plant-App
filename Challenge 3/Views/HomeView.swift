@@ -125,8 +125,8 @@ struct HomeView: View {
                                 .position(x: pos.x, y: pos.y)
                             }
                         }
-                        .onChange(of: islandSize){newSize in
-                            if newSize != .zero{
+                        .onChange(of: islandSize){oldSize, newSize in
+                            if newSize.height>oldSize.height{
                                 plantVM.islandSize = newSize
                             }
                         }
