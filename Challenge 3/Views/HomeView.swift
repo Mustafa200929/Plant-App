@@ -29,6 +29,7 @@ struct HomeView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
+  
                 GeometryReader {geo in
                     let w = geo.size.width
                     let h = geo.size.height
@@ -43,20 +44,6 @@ struct HomeView: View {
                     }
                 }
                 VStack{
-                    /*if notShown == false{
-                        Text("You check your supplies, you only have one seed to populate the island.")
-                            .padding()
-                            .glassEffect()
-                            .foregroundColor(.primary)
-                            .opacity(boxOpacity)
-                            .animation(.easeOut(duration: 1), value: boxOpacity)
-                            .onAppear {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                                    notShown = false
-                                    boxOpacity = 0
-                                }
-                            }
-                    }*/
                     
                     GeometryReader { geo in
                         let width = geo.size.width
@@ -133,6 +120,9 @@ struct HomeView: View {
                         .frame(width: islandSize.width, height: islandSize.height)
                         .frame(width: width, height: height)
                     }
+                }
+                if plants.isEmpty {
+                    ContentUnavailableView("No Plants", systemImage: "leaf", description: Text("Get a seed from your preferred plant vendor and start planting it to track its growth!"))
                 }
             }
             
