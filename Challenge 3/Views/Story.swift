@@ -101,13 +101,10 @@ struct StoryPage: View {
     
     var body: some View {
         ZStack {
-            Image(background)
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
+         
             
             VStack {
-                Spacer()
+              Spacer()
                 
                 speechBox {
                     TypewriterText(fullText: text)
@@ -138,7 +135,7 @@ struct StoryPage: View {
             Image(background)
                 .resizable()
                 .scaledToFill()
-                .scaleEffect(1.1)
+                
                 .ignoresSafeArea()
         }
         .background(ignoresSafeAreaEdges: .all)
