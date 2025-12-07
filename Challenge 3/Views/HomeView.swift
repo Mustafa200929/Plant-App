@@ -43,7 +43,7 @@ struct HomeView: View {
                     }
                 }
                 VStack{
-                    /*if notShown == false{
+                    if notShown == false{
                         Text("You check your supplies, you only have one seed to populate the island.")
                             .padding()
                             .glassEffect()
@@ -56,7 +56,7 @@ struct HomeView: View {
                                     boxOpacity = 0
                                 }
                             }
-                    }*/
+                    }
                     
                     GeometryReader { geo in
                         let width = geo.size.width
